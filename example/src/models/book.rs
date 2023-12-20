@@ -2,8 +2,16 @@ use crate::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
+  #[serde(default)]
+  pub id: String,
+
   pub title: String,
-  pub content: String
+
+  #[serde(default)]
+  pub content: String,
+
+  #[serde(default)]
+  pub fk_library: String
 }
 
 impl Book {
@@ -11,7 +19,10 @@ impl Book {
     Ok(db::read("books")?.unwrap_or_default())
   }
 
-  pub fn add(self) -> AppResult<()> {
+  pub fn add(mut self, library: String) -> AppResult<()> {
+    self.id = nanoid::nanoid!();
+    self.fk_library = library;
+
     let mut all = Self::find_all()?;
     all.push(self);
     db::write("books".to_owned(), &all)?;

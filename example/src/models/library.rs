@@ -6,10 +6,8 @@ static TABLE: &'static str = "libraries";
 pub struct Library {
   #[serde(default)]
   pub id: String,
-  pub title: String,
 
-  #[serde(default)]
-  pub documents: Vec<Book>
+  pub title: String
 }
 
 impl Library {
@@ -27,9 +25,26 @@ impl Library {
     Ok(())
   }
 
+  pub fn find_by_id(id: &str) -> AppResult<Option<Self>> {
+    let all = Self::find_all()?;
+
+    Ok(all.into_iter().find(|l| l.id == id))
+  }
+
   pub fn find_by_title(title: &str) -> AppResult<Option<Self>> {
     let all = Self::find_all()?;
 
     Ok(all.into_iter().find(|l| l.title == title))
+  }
+
+  pub fn books(&self) -> AppResult<Vec<Book>> {
+    let books = Book::find_all().unwrap();
+
+    Ok(
+      books
+        .into_iter()
+        .filter(|b| b.fk_library == self.id)
+        .collect()
+    )
   }
 }

@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 mod library;
+pub use library::ViewLibrary;
 
 pub struct ViewIndex;
 impl lv_server::View for ViewIndex {}
@@ -43,7 +44,7 @@ fn render_libraries() -> Markup {
   html!(
     ul class="list-libraries" hx-get="/app/libraries" hx-trigger={"fetch-library-list from:body"} hx-swap="outerHTML" {
       @for lib in libs {
-        li {a href={"/library"(lib.id)} {(lib.title)}}
+        li {a href={"/libraries/"(lib.id)} {(lib.title)}}
       }
     }
   )
