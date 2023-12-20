@@ -1,0 +1,14 @@
+form label {
+  display: block;
+}
+
+.library {
+  display: flex;
+  flex-direction: row;
+}
+.library .sidebar {
+  flex-shrink: 0;
+}
+.library .document {
+  flex-grow: 1;
+}
