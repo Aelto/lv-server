@@ -1,6 +1,12 @@
+use actix_web::web::Query;
+
 use crate::prelude::*;
 
-pub struct ViewLibrary;
+#[derive(Debug, Deserialize)]
+pub struct ViewLibrary {
+  book: Option<String>
+}
+
 impl lv_server::View for ViewLibrary {}
 
 impl lv_server::WithRouter for ViewLibrary {
@@ -16,9 +22,14 @@ impl lv_server::WithRouter for ViewLibrary {
         get().to(book_create_form_cancel)
       )
       .route("/app/libraries/{id}/books", post().to(add_library_book))
-      .route("/app/libraries/{id}/books", get().to(list_books));
+      .route("/app/libraries/{id}/books", get().to(display_books))
+      .route(
+        "/app/libraries/{id}/document/{doc}",
+        get().to(display_document)
+      );
 
-    async fn index(path: Path<String>) -> HttpResponse {
+    async fn index(path: Path<String>, params: Query<ViewLibrary>) -> HttpResponse {
+      let params = params.into_inner();
       let id = path.into_inner();
 
       let Some(lib) = Library::find_by_id(&id).unwrap() else {
@@ -30,7 +41,13 @@ impl lv_server::WithRouter for ViewLibrary {
           h1 {"Library: "(lib.title)}
         }
 
-        (render_library(&lib).await)
+        div.library {
+          (render_sidebar(&lib).await)
+
+          @if let Some(book_id) = params.book {
+            (render_document(&lib, book_id, false).await)
+          }
+        }
       )))
     }
 
@@ -63,7 +80,7 @@ impl lv_server::WithRouter for ViewLibrary {
       lv_server::responses::trigger(lv_server::responses::html(fragment), "fetch-book-list")
     }
 
-    async fn list_books(path: Path<String>) -> HttpResponse {
+    async fn display_books(path: Path<String>) -> HttpResponse {
       let id = path.into_inner();
 
       let Some(lib) = Library::find_by_id(&id).unwrap() else {
@@ -72,19 +89,23 @@ impl lv_server::WithRouter for ViewLibrary {
 
       lv_server::responses::html(render_books(&lib).await)
     }
-  }
-}
 
-async fn render_library(lib: &Library) -> Markup {
-  html!(div.library {
-    (render_sidebar(lib).await)
-    (render_document(lib).await)
-  })
+    async fn display_document(path: Path<(String, String)>) -> HttpResponse {
+      let (lib, doc) = path.into_inner();
+
+      let Some(lib) = Library::find_by_id(&lib).unwrap() else {
+        return lv_server::responses::as_html(&"No library with this ID");
+      };
+
+      lv_server::responses::html(render_document(&lib, doc, false).await)
+    }
+  }
 }
 
 async fn render_sidebar(lib: &Library) -> Markup {
   html!(div.sidebar {
     (render_add_book_button(&lib.id))
+    hr;
     (render_books(lib).await)
   })
 }
@@ -95,15 +116,30 @@ async fn render_books(lib: &Library) -> Markup {
   html!(
     div.books hx-get={"/app/libraries/"(lib.id)"/books"} hx-trigger={"fetch-book-list from:body"} {
       @for book in books {
-        a href={"?"(book.id)} {(book.title)}
+        a href={"?book="(book.id)} {(book.title)}
       }
     }
   )
 }
 
-async fn render_document(_: &Library) -> Markup {
-  html!(div.document {
+async fn render_document(lib: &Library, book_id: String, edit: bool) -> Markup {
+  let Some(book) = lib.book(&book_id).unwrap() else {
+    return html!(div.document {
+      "No document with this ID"
+    });
+  };
 
+  html!(div.document hx-swap="outerHTML" {
+    @match edit {
+      true => {
+        textarea {(book.content)}
+      },
+      false => {
+        button hx-get=""
+
+        pre {(book.content)}
+      }
+    }
   })
 }
 

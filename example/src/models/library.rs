@@ -47,4 +47,10 @@ impl Library {
         .collect()
     )
   }
+
+  pub fn book(&self, id: &str) -> AppResult<Option<Book>> {
+    let books = self.books().unwrap();
+
+    Ok(books.into_iter().find(|b| b.id == id))
+  }
 }
