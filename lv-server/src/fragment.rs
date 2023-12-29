@@ -1,3 +1,7 @@
-use crate::WithRouter;
+use crate::{WithRouter, WithTrigger};
 
-pub trait Fragment: WithRouter + maud::Render {}
+pub trait Fragment<Events>: WithRouter
+where
+  Events: WithTrigger
+{
+}

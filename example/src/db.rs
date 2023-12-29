@@ -14,6 +14,23 @@ static CELL: OnceLock<Mutex<RefCell<HashMap<DbKey, DbValue>>>> = OnceLock::new()
 
 pub fn init() {
   CELL.get_or_init(|| Mutex::new(RefCell::new(HashMap::new())));
+
+  let lib = crate::models::Library {
+    title: "lorem".to_owned(),
+    id: String::new()
+  };
+  lib.add().unwrap();
+
+  for lib in crate::models::Library::find_all().unwrap() {
+    let book = crate::models::Book {
+      content: String::new(),
+      id: String::new(),
+      title: "lorem".to_owned(),
+      fk_library: String::new()
+    };
+
+    book.add(lib.id).unwrap();
+  }
 }
 
 pub fn read<T>(key: &str) -> Result<Option<T>, Box<dyn std::error::Error>>

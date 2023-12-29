@@ -1,36 +1,56 @@
 use crate::prelude::*;
 
-pub struct BookList(pub Vec<Book>);
+pub struct BookList;
+pub enum BookListEvents {
+  Reload
+}
 
-// impl maud::Render for BookList {
-//   fn render(&self) -> Markup {
-//     html!(
-//       ul class="list-books" hx-get="/app/books" hx-trigger={"fetch-book-list from:body"} hx-swap="outerHTML" {
-//         @for b in &self.0 {
-//           li {(b)}
-//         }
-//       }
-//     )
-//   }
-// }
+impl lv_server::Fragment<BookListEvents> for BookList {}
+impl lv_server::WithTrigger for BookListEvents {
+  fn into_trigger(self) -> &'static str {
+    match self {
+      Self::Reload => "fetch-book-list"
+    }
+  }
+}
+impl lv_server::WithRouter for BookList {
+  fn router(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg.route(
+      "/frg/BookList/libraries/{lib}/book-list",
+      get().to(get_library_book_list)
+    );
 
-// impl lv_server::WithRouter for BookList {
-//   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-//     cfg
-//       .route("/app/books", get().to(display_book_list))
-//       .route("/app/books", post().to(add_book));
+    async fn get_library_book_list(path: Path<String>) -> HttpResponse {
+      let id = path.into_inner();
 
-//     async fn display_book_list() -> HttpResponse {
-//       let books = BookList(Book::find_all().unwrap());
+      let Some(library) = Library::find_by_id(&id).unwrap() else {
+        return lv_server::responses::as_html(&"no library with this id");
+      };
 
-//       lv_server::responses::as_html(&books)
-//     }
+      let books = library.books().unwrap();
+      let view = BookList::render(&id, &books);
 
-//     async fn add_book(Form(book): Form<Book>) -> HttpResponse {
-//       book.add().unwrap();
+      lv_server::responses::html(view)
+    }
+  }
+}
 
-//       let fragment = display_book_list().await;
-//       lv_server::responses::trigger(fragment, "fetch-book-list")
-//     }
-//   }
-// }
+impl BookList {
+  pub fn render(library_id: &String, books: &Vec<Book>) -> Markup {
+    html!(
+      div.books
+        hx-get={"/frg/BookList/libraries/"(library_id)"/book-list"}
+        hx-trigger={"fetch-book-list from:body"} {
+
+        ul {
+          @for book in books {
+            li {
+              a href={"?book="(book.id)} {(book.title)}
+            }
+          }
+        }
+
+      }
+    )
+  }
+}

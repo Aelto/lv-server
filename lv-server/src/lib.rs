@@ -9,6 +9,9 @@ pub use with_render::WithRender;
 mod with_scope;
 pub use with_scope::WithScope;
 
+mod with_trigger;
+pub use with_trigger::WithTrigger;
+
 mod view;
 pub use view::View;
 

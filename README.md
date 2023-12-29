@@ -39,3 +39,31 @@ The problem comes from the fact the fragments are too specialized
 to be considered generic fragments so they might as well be coupled.
 
 Now whether they use events or append/replace DOM elements is up to preferences, but generally events encourage a more "stateless" way of thinking. Which can also allow for some of these fragments to be used outside their original places.
+
+# Problem 3: complex pages, numerous endpoints
+On the most complex pages it is easy to reach 10 or 20 endpoints just for the
+page. On top of that a single endpoint can result in two routes because there is
+the actix route and the one used to call the endpoint with real values in place
+of the params.
+
+## non-solution 1
+A solution could be to use actix' [url_for()](https://docs.rs/actix-web/4.4.1/actix_web/struct.HttpRequest.html#method.url_for)
+to avoid hardcoding the routes, but unfortunately it is as error prone as hand
+writing them with 0 compile time guarantees.
+
+## solution 2
+Splitting things in fragments, which goes against the Problem 2's solution.
+
+It might be a good idea to have different "namespaces" or prefixes for the
+routes:
+- `/` (no prefix) for SSR routes
+- `/app` for the domain endpoints of the SSR routes
+- `/frg` for the fragment endpoints,
+  - the fragments endpoints should then use a flat registration
+  - `/frg/{fragment-name}` where the name of the fragment uses the Rust Struct's name
+  converted to snake-case.
+
+# Possible improvements
+
+- extractors to retrieve specific IDs such as books/libraries IDs
+  - common way handle errors on unknown records

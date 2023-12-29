@@ -1,3 +1,8 @@
+body {
+  padding: 1em;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 form label {
   display: block;
 }
@@ -6,9 +11,19 @@ form label {
   display: flex;
   flex-direction: row;
 }
+
 .library .sidebar {
   flex-shrink: 0;
+
+  border-right: solid 1px whitesmoke;
+  padding: 1em;
 }
+
 .library .document {
   flex-grow: 1;
+}
+
+input,
+label {
+  display: block;
 }

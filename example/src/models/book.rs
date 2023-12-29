@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Book {
   #[serde(default)]
   pub id: String,
@@ -26,6 +26,16 @@ impl Book {
     let mut all = Self::find_all()?;
     all.push(self);
     db::write("books".to_owned(), &all)?;
+
+    Ok(())
+  }
+
+  pub fn update(&self) -> AppResult<()> {
+    let books = Self::find_all().unwrap();
+    let mut books: Vec<Self> = books.into_iter().filter(|b| b.id != self.id).collect();
+
+    books.push(self.clone());
+    db::write("books".to_owned(), &books)?;
 
     Ok(())
   }
