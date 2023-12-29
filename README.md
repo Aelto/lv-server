@@ -63,7 +63,18 @@ routes:
   - `/frg/{fragment-name}` where the name of the fragment uses the Rust Struct's name
   converted to snake-case.
 
-# Possible improvements
+# Problem 4: fragments and reused code for extracting data off requests
+As the number of fragments grow the amount of duplicated code to handle the 
+extraction of types from requests (be it their paths or bodies) may get
+duplicated in a lot of places.
 
-- extractors to retrieve specific IDs such as books/libraries IDs
-  - common way handle errors on unknown records
+## solution
+Common way to extract data, for example fetching a library from a path, should
+be implemented as an extractor to make it easier and avoid code duplication in
+error handling.
+
+for example:
+- extracting & fetching a library from a `/{library_id}` segment from a req path
+- extracting & fetching the books of a library from a `/{library_id}` & `/{book_id}`
+
+It creates conventions that are easy to re-use and learn as the codebase grows.
