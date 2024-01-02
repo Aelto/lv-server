@@ -1,13 +1,13 @@
-use actix_web::web::Query;
-
 use crate::prelude::*;
+
+mod fragments;
 
 #[derive(Debug, Deserialize)]
 pub struct ViewLibrary {
   book: Option<String>
 }
 
-impl lv_server::View for ViewLibrary {}
+impl lv_server::View<(fragments::AddBookButton, fragments::BookList)> for ViewLibrary {}
 
 impl lv_server::WithRouter for ViewLibrary {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {

@@ -10,3 +10,9 @@ pub trait WithTrigger {
     super::responses::trigger(res, self.into_trigger())
   }
 }
+
+impl WithTrigger for () {
+  fn into_trigger(self) -> &'static str {
+    ""
+  }
+}

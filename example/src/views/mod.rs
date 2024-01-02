@@ -1,10 +1,10 @@
 use crate::prelude::*;
 
-mod library;
-pub use library::ViewLibrary;
+mod _library;
+pub use _library::ViewLibrary;
 
 pub struct ViewIndex;
-impl lv_server::View for ViewIndex {}
+impl lv_server::View<()> for ViewIndex {}
 
 impl lv_server::WithRouter for ViewIndex {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {

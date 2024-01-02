@@ -32,7 +32,5 @@ fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   cfg
     .configure(<views::ViewIndex as lv_server::WithRouter>::router)
     .configure(<views::ViewLibrary as lv_server::WithRouter>::router)
-    .configure(<fragments::BookList as lv_server::WithRouter>::router)
-    .configure(<fragments::AddBookButton as lv_server::WithRouter>::router)
     .service(actix_files::Files::new("/static", "./static"));
 }

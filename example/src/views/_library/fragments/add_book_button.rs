@@ -1,19 +1,13 @@
 use crate::prelude::*;
 
 pub struct AddBookButton;
-pub enum AddBookButtonEvents {}
 
 #[derive(Serialize, Deserialize)]
 struct AddBookForm {
   title: String
 }
 
-impl lv_server::Fragment<AddBookButtonEvents> for AddBookButton {}
-impl lv_server::WithTrigger for AddBookButtonEvents {
-  fn into_trigger(self) -> &'static str {
-    ""
-  }
-}
+impl lv_server::Fragment<()> for AddBookButton {}
 impl lv_server::WithRouter for AddBookButton {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     cfg
@@ -56,7 +50,7 @@ impl lv_server::WithRouter for AddBookButton {
       };
       book.add(id).unwrap();
 
-      fragments::BookListEvents::Reload.trigger(lv_server::responses::html(fragment))
+      super::BookListEvents::Reload.trigger(lv_server::responses::html(fragment))
     }
   }
 }
