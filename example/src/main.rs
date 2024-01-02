@@ -27,10 +27,10 @@ async fn main() -> Result<(), std::io::Error> {
 }
 
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
-  // use actix_web::web::get;
+  use lv_server::View;
 
-  cfg
-    .configure(<views::ViewIndex as lv_server::WithRouter>::router)
-    .configure(<views::ViewLibrary as lv_server::WithRouter>::router)
-    .service(actix_files::Files::new("/static", "./static"));
+  views::ViewIndex::router(cfg);
+  views::ViewLibrary::router(cfg);
+
+  cfg.service(actix_files::Files::new("/static", "./static"));
 }

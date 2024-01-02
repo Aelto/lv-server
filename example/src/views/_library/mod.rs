@@ -8,7 +8,6 @@ pub struct ViewLibrary {
 }
 
 impl lv_server::View<(fragments::AddBookButton, fragments::BookList)> for ViewLibrary {}
-
 impl lv_server::WithRouter for ViewLibrary {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     cfg
