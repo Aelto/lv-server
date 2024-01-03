@@ -14,20 +14,21 @@ impl lv_server::Fragment<()> for BookViewEditToggle {
 impl WithRouter for BookViewEditToggle {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     api::get_index::route(cfg, get_index);
+    api::get_edit_form::route(cfg, get_edit_form);
+    api::put_library_book::route(cfg, put_library_book);
+
     async fn get_index(
       Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
     ) -> HttpResponse {
       lv_server::responses::html(BookViewEditToggle::render(&book))
     }
 
-    api::get_edit_form::route(cfg, get_edit_form);
     async fn get_edit_form(
       Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
     ) -> HttpResponse {
       lv_server::responses::html(BookViewEditToggle::render_edit_form(&book))
     }
 
-    api::put_library_book::route(cfg, put_library_book);
     async fn put_library_book(
       Need(LibraryBookPathExt(_lib, mut book)): Need<LibraryBookPathExt>, Form(form): Form<Book>
     ) -> HttpResponse {

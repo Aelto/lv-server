@@ -23,6 +23,7 @@ impl lv_server::WithTrigger for BookListEvents {
 impl lv_server::WithRouter for BookList {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     api::get_library_book_list::route(cfg, get_library_book_list);
+
     async fn get_library_book_list(
       Need(LibraryPathExt(library)): Need<LibraryPathExt>
     ) -> HttpResponse {

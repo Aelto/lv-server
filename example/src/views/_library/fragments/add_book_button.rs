@@ -2,6 +2,12 @@ use crate::prelude::*;
 
 pub struct AddBookButton;
 
+lv_server::endpoints!(AddBookButton {
+  get_library_add_book_button => GET "libraries/{library_id}/button"
+  get_library_add_book_form => GET "libraries/{library_id}/form"
+  post_library_book => POST "libraries/{library_id}"
+});
+
 #[derive(Serialize, Deserialize)]
 struct AddBookForm {
   title: String
@@ -12,19 +18,9 @@ impl lv_server::Fragment<()> for AddBookButton {
 }
 impl lv_server::WithRouter for AddBookButton {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    AddBookButton::fragment_route(
-      cfg,
-      "libraries/{library_id}/button",
-      get().to(get_library_add_book_button)
-    );
-
-    AddBookButton::fragment_route(
-      cfg,
-      "libraries/{library_id}/form",
-      get().to(get_library_add_book_form)
-    );
-
-    AddBookButton::fragment_route(cfg, "libraries/{library_id}", post().to(add_library_book));
+    api::get_library_add_book_button::route(cfg, get_library_add_book_button);
+    api::get_library_add_book_form::route(cfg, get_library_add_book_form);
+    api::post_library_book::route(cfg, add_library_book);
 
     async fn get_library_add_book_button(path: Path<String>) -> HttpResponse {
       let id = path.into_inner();
@@ -60,7 +56,7 @@ impl AddBookButton {
       button
         hx-target="this"
         hx-swap="outerHTML"
-        hx-get={"/frg/AddBookButton/libraries/"(library_id)"/form"}
+        hx-get={(api::get_library_add_book_form::url(library_id))}
         {"Add book"}
     )
   }
@@ -68,7 +64,7 @@ impl AddBookButton {
   fn render_form(lib: &Library) -> Markup {
     html!(
       form
-        hx-post={"/frg/AddBookButton/libraries/"(lib.id)}
+        hx-post={(api::post_library_book::url(&lib.id))}
         hx-target="this"
         hx-swap="outerHTML" {
 
@@ -81,7 +77,7 @@ impl AddBookButton {
 
         button {"Create book"}
         button
-          hx-get={"/frg/AddBookButton/libraries/"(lib.id)"/button"} {"Cancel"}
+          hx-get={(api::get_library_add_book_button::url(&lib.id))} {"Cancel"}
       }
     )
   }
