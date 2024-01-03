@@ -25,39 +25,33 @@ impl lv_server::WithRouter for ViewLibrary {
     async fn index(
       Need(LibraryPathExt(lib)): Need<LibraryPathExt>, params: Query<ViewLibrary>
     ) -> HttpResponse {
-      lv_server::responses::html(page(html!(
-        header {
-          h1 {"Library: "(lib.title)}
-        }
-
-        div.library {
-          (render_sidebar(&lib).await)
-
-          @if let Some(book_id) = &params.book {
-            (render_document(&lib, book_id).await)
-          }
-        }
-      )))
+      lv_server::responses::html(page(params.render(&lib)))
     }
   }
 }
 
-async fn render_sidebar(lib: &Library) -> Markup {
-  let books = lib.books().unwrap();
+impl ViewLibrary {
+  fn render(&self, lib: &Library) -> Markup {
+    html!(
+      header {
+        h1 {"Library: "(lib.title)}
+      }
 
-  html!(div.sidebar {
-    (fragments::AddBookButton::render(&lib.id))
-    hr;
-    (fragments::BookList::render(&lib.id, &books))
-  })
-}
+      div.library {
+        @if let Ok(books) = lib.books() {
+          div.sidebar {
+            (fragments::AddBookButton::render(&lib.id))
+            hr;
+            (fragments::BookList::render(&lib.id, &books))
+          }
+        }
 
-async fn render_document(lib: &Library, book_id: &str) -> Markup {
-  let Some(book) = lib.book(&book_id).unwrap() else {
-    return html!(div.document {
-      "No document with this ID"
-    });
-  };
-
-  fragments::BookViewEditToggle::render(&book)
+        @if let Some(book_id) = &self.book {
+          @if let Ok(Some(book)) = lib.book(&book_id) {
+            (fragments::BookViewEditToggle::render(&book))
+          }
+        }
+      }
+    )
+  }
 }
