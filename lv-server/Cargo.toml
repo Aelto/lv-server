@@ -10,3 +10,6 @@ maud = "0.25.0"
 serde = { version = "1.0.193", features = ["serde_derive"] }
 actix-web = "4.4.0"
 async-trait = "0.1.74"
+
+# used in prints
+# owo-colors = "4.0.0"

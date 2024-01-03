@@ -5,7 +5,9 @@ pub enum BookListEvents {
   Reload
 }
 
-impl lv_server::Fragment<BookListEvents> for BookList {}
+impl lv_server::Fragment<BookListEvents> for BookList {
+  const ID: &'static str = "BookList";
+}
 impl lv_server::WithTrigger for BookListEvents {
   fn into_trigger(self) -> &'static str {
     match self {
@@ -15,8 +17,9 @@ impl lv_server::WithTrigger for BookListEvents {
 }
 impl lv_server::WithRouter for BookList {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.route(
-      "/frg/BookList/libraries/{lib}/book-list",
+    BookList::fragment_route(
+      cfg,
+      "libraries/{lib}/book-list",
       get().to(get_library_book_list)
     );
 

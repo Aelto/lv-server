@@ -18,4 +18,8 @@ pub use view::View;
 mod fragment;
 pub use fragment::Fragment;
 
+mod path_extractor;
+pub use path_extractor::Need;
+pub use path_extractor::PathExtractor;
+
 pub use async_trait::async_trait;
