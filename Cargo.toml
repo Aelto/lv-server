@@ -4,4 +4,4 @@ resolver = "2"
 members = [
   "lv-server",
   "example"
-]
+, "endpoints-proc-macro"]

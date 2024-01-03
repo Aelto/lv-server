@@ -23,3 +23,5 @@ pub use path_extractor::Need;
 pub use path_extractor::PathExtractor;
 
 pub use async_trait::async_trait;
+
+pub use lv_server_endpoints_proc_macro::endpoints;

@@ -1,6 +1,11 @@
 use crate::prelude::*;
 
 pub struct BookList;
+
+lv_server::endpoints!(BookList {
+  get_library_book_list => GET "libraries/{library_id}/book-list"
+});
+
 pub enum BookListEvents {
   Reload
 }
@@ -17,12 +22,7 @@ impl lv_server::WithTrigger for BookListEvents {
 }
 impl lv_server::WithRouter for BookList {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    BookList::fragment_route(
-      cfg,
-      "libraries/{lib}/book-list",
-      get().to(get_library_book_list)
-    );
-
+    api::get_library_book_list::route(cfg, get_library_book_list);
     async fn get_library_book_list(
       Need(LibraryPathExt(library)): Need<LibraryPathExt>
     ) -> HttpResponse {
@@ -38,7 +38,7 @@ impl BookList {
   pub fn render(library_id: &String, books: &Vec<Book>) -> Markup {
     html!(
       div.books
-        hx-get={"/frg/BookList/libraries/"(library_id)"/book-list"}
+        hx-get={(api::get_library_book_list::url(&library_id))}
         hx-trigger={"fetch-book-list from:body"} {
 
         ul {

@@ -13,3 +13,5 @@ async-trait = "0.1.74"
 
 # used in prints
 # owo-colors = "4.0.0"
+
+lv-server-endpoints-proc-macro = { path = "../endpoints-proc-macro" }
