@@ -35,10 +35,13 @@ to update the UI:
 - the POST returns the HTML of the library, which is appended to the list, but the form & the list are now __tightly__ coupled. Which means they might as well be a single fragment together.
 
 ## solution
-The problem comes from the fact the fragments are too specialized
-to be considered generic fragments so they might as well be coupled.
+The problem comes from the fact the fragments are too specialized to be
+considered generic fragments so they might as well be coupled.
 
 Now whether they use events or append/replace DOM elements is up to preferences, but generally events encourage a more "stateless" way of thinking. Which can also allow for some of these fragments to be used outside their original places.
+
+Ideally fragments should be used in the pages to keep the large amount of
+endpoints manageable. [See Problem 3](#problem-3-complex-pages-numerous-endpoints)
 
 # Problem 3: complex pages, numerous endpoints
 On the most complex pages it is easy to reach 10 or 20 endpoints just for the
@@ -52,8 +55,6 @@ to avoid hardcoding the routes, but unfortunately it is as error prone as hand
 writing them with 0 compile time guarantees.
 
 ## solution 2
-Splitting things in fragments, which goes against the Problem 2's solution.
-
 It might be a good idea to have different "namespaces" or prefixes for the
 routes:
 - `/` (no prefix) for SSR routes

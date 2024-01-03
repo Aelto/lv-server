@@ -23,15 +23,11 @@ impl lv_server::WithRouter for BookList {
       get().to(get_library_book_list)
     );
 
-    async fn get_library_book_list(path: Path<String>) -> HttpResponse {
-      let id = path.into_inner();
-
-      let Some(library) = Library::find_by_id(&id).unwrap() else {
-        return lv_server::responses::as_html(&"no library with this id");
-      };
-
+    async fn get_library_book_list(
+      Need(LibraryPathExt(library)): Need<LibraryPathExt>
+    ) -> HttpResponse {
       let books = library.books().unwrap();
-      let view = BookList::render(&id, &books);
+      let view = BookList::render(&library.id, &books);
 
       lv_server::responses::html(view)
     }
