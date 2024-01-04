@@ -79,3 +79,12 @@ for example:
 - extracting & fetching the books of a library from a `/{library_id}` & `/{book_id}`
 
 It creates conventions that are easy to re-use and learn as the codebase grows.
+
+# Problem 5: htmx attributes on DOM nodes
+Remembering & writing all of the attributes manually can be complicated,
+especially since some patterns are used often.
+
+## solution
+Wait until the [PR: Support attribute spreading with iterators](https://github.com/lambda-fairy/maud/pull/408)
+is merged, after which we will implement functions to generate the attributes
+for us.
