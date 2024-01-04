@@ -2,45 +2,43 @@ use crate::prelude::*;
 
 pub struct BookViewEditToggle;
 
+impl lv_server::Fragment<(), api::Router> for BookViewEditToggle {
+  const ID: &'static str = "BookViewToggle";
+}
 lv_server::endpoints!(BookViewEditToggle {
   get_index => GET "{library_id}/{book_id}"
   get_edit_form => GET "{library_id}/{book_id}/edit"
   put_library_book => PUT "{library_id}/{book_id}"
 });
 
-impl lv_server::Fragment<()> for BookViewEditToggle {
-  const ID: &'static str = "BookViewToggle";
+impl api::get_index::Router {
+  pub async fn endpoint(
+    Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
+  ) -> HttpResponse {
+    lv_server::responses::html(BookViewEditToggle::render(&book))
+  }
 }
-impl WithRouter for BookViewEditToggle {
-  fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    api::get_index::route(cfg, get_index);
-    api::get_edit_form::route(cfg, get_edit_form);
-    api::put_library_book::route(cfg, put_library_book);
 
-    async fn get_index(
-      Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
-    ) -> HttpResponse {
-      lv_server::responses::html(BookViewEditToggle::render(&book))
-    }
+impl api::get_edit_form::Router {
+  pub async fn endpoint(
+    Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
+  ) -> HttpResponse {
+    lv_server::responses::html(BookViewEditToggle::render_edit_form(&book))
+  }
+}
 
-    async fn get_edit_form(
-      Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
-    ) -> HttpResponse {
-      lv_server::responses::html(BookViewEditToggle::render_edit_form(&book))
-    }
+impl api::put_library_book::Router {
+  pub async fn endpoint(
+    Need(LibraryBookPathExt(_lib, mut book)): Need<LibraryBookPathExt>, Form(form): Form<Book>
+  ) -> HttpResponse {
+    book.content = form.content;
+    book.title = form.title;
+    book.update().unwrap();
 
-    async fn put_library_book(
-      Need(LibraryBookPathExt(_lib, mut book)): Need<LibraryBookPathExt>, Form(form): Form<Book>
-    ) -> HttpResponse {
-      book.content = form.content;
-      book.title = form.title;
-      book.update().unwrap();
+    let view = BookViewEditToggle::render(&book);
+    let html = lv_server::responses::html(view);
 
-      let view = BookViewEditToggle::render(&book);
-      let html = lv_server::responses::html(view);
-
-      super::BookListEvents::Reload.trigger(html)
-    }
+    super::BookListEvents::Reload.trigger(html)
   }
 }
 

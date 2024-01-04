@@ -10,27 +10,22 @@ pub enum BookListEvents {
   Reload
 }
 
-impl lv_server::Fragment<BookListEvents> for BookList {
+impl api::get_library_book_list::Router {
+  pub async fn endpoint(Need(LibraryPathExt(library)): Need<LibraryPathExt>) -> HttpResponse {
+    let books = library.books().unwrap();
+    let view = BookList::render(&library.id, &books);
+
+    lv_server::responses::html(view)
+  }
+}
+
+impl lv_server::Fragment<BookListEvents, api::Router> for BookList {
   const ID: &'static str = "BookList";
 }
 impl lv_server::WithTrigger for BookListEvents {
   fn into_trigger(self) -> &'static str {
     match self {
       Self::Reload => "fetch-book-list"
-    }
-  }
-}
-impl lv_server::WithRouter for BookList {
-  fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    api::get_library_book_list::route(cfg, get_library_book_list);
-
-    async fn get_library_book_list(
-      Need(LibraryPathExt(library)): Need<LibraryPathExt>
-    ) -> HttpResponse {
-      let books = library.books().unwrap();
-      let view = BookList::render(&library.id, &books);
-
-      lv_server::responses::html(view)
     }
   }
 }

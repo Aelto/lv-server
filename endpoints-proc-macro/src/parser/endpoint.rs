@@ -4,7 +4,7 @@ use crate::prelude::*;
 
 #[derive(Debug, Clone, Default)]
 pub struct Endpoint {
-  name: String,
+  pub name: String,
   verb: String,
   route: String,
   params: Vec<String>
@@ -50,10 +50,12 @@ impl Endpoint {
 
     let url_fn = self.emit_url_fn(router_name);
     let route_fn = self.emit_route_fn(router_name);
+    let router = self.emit_router();
 
     let output = quote::quote!(
       pub mod #name {
         pub const URL: &'static str = #route;
+        #router
 
         #url_fn
         #route_fn
@@ -95,6 +97,17 @@ impl Endpoint {
           URL,
           actix_web::web::#verb().to(handler)
         );
+      }
+    )
+  }
+
+  fn emit_router(&self) -> proc_macro2::TokenStream {
+    quote::quote!(
+      pub struct Router;
+      impl lv_server::WithRouter for Router {
+        fn router(cfg: &mut actix_web::web::ServiceConfig) {
+          route(cfg, Router::endpoint);
+        }
       }
     )
   }

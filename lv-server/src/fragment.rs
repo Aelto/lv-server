@@ -1,8 +1,9 @@
 use crate::{WithRouter, WithTrigger};
 
-pub trait Fragment<Events>: WithRouter
+pub trait Fragment<Events, Endpoints>
 where
-  Events: WithTrigger
+  Events: WithTrigger,
+  Endpoints: WithRouter
 {
   const ID: &'static str;
 
