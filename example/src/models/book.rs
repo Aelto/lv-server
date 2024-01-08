@@ -19,6 +19,12 @@ impl Book {
     Ok(db::read("books")?.unwrap_or_default())
   }
 
+  pub fn find_by_id(id: &str) -> AppResult<Option<Self>> {
+    let all = Self::find_all()?;
+
+    Ok(all.into_iter().find(|l| l.id == id))
+  }
+
   pub fn add(mut self, library: String) -> AppResult<()> {
     self.id = nanoid::nanoid!();
     self.fk_library = library;

@@ -11,7 +11,7 @@ pub enum BookListEvents {
 }
 
 impl api::get_library_book_list::Router {
-  pub async fn endpoint(Need(LibraryPathExt(library)): Need<LibraryPathExt>) -> HttpResponse {
+  pub async fn endpoint(Need(PELibrary(library)): Need<PELibrary>) -> HttpResponse {
     let books = library.books().unwrap();
     let view = BookList::render(&library.id, &books);
 

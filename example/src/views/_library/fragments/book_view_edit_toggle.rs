@@ -12,24 +12,20 @@ lv_server::endpoints!(BookViewEditToggle {
 });
 
 impl api::get_index::Router {
-  pub async fn endpoint(
-    Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
-  ) -> HttpResponse {
+  pub async fn endpoint(Need(PEBook(book)): Need<PEBook>) -> HttpResponse {
     lv_server::responses::html(BookViewEditToggle::render(&book))
   }
 }
 
 impl api::get_edit_form::Router {
-  pub async fn endpoint(
-    Need(LibraryBookPathExt(_lib, book)): Need<LibraryBookPathExt>
-  ) -> HttpResponse {
+  pub async fn endpoint(Need(PEBook(book)): Need<PEBook>) -> HttpResponse {
     lv_server::responses::html(BookViewEditToggle::render_edit_form(&book))
   }
 }
 
 impl api::put_library_book::Router {
   pub async fn endpoint(
-    Need(LibraryBookPathExt(_lib, mut book)): Need<LibraryBookPathExt>, Form(form): Form<Book>
+    Need(PEBook(mut book)): Need<PEBook>, Form(form): Form<Book>
   ) -> HttpResponse {
     book.content = form.content;
     book.title = form.title;

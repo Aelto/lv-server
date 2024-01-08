@@ -6,8 +6,6 @@ pub trait View<Fragments>: WithRouter
 where
   Fragments: WithRouter
 {
-  fn identifier() -> &'static str;
-
   /// Unlike the [WithRouter] trait this function comes from the [View] trait
   /// with a default implementation that combines the fragments and the View's
   /// render function.

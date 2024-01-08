@@ -14,16 +14,13 @@ impl
     fragments::BookViewEditToggle
   )> for ViewLibrary
 {
-  fn identifier() -> &'static str {
-    "ViewLibrary"
-  }
 }
 impl lv_server::WithRouter for ViewLibrary {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.route("/libraries/{library_id}", get().to(index));
 
     async fn index(
-      Need(LibraryPathExt(lib)): Need<LibraryPathExt>, params: Query<ViewLibrary>
+      Need(PELibrary(lib)): Need<PELibrary>, params: Query<ViewLibrary>
     ) -> HttpResponse {
       lv_server::responses::html(page(params.render(&lib)))
     }

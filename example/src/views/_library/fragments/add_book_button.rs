@@ -21,14 +21,14 @@ impl api::get_library_add_book_button::Router {
 }
 
 impl api::get_library_add_book_form::Router {
-  pub async fn endpoint(Need(LibraryPathExt(library)): Need<LibraryPathExt>) -> HttpResponse {
+  pub async fn endpoint(Need(PELibrary(library)): Need<PELibrary>) -> HttpResponse {
     lv_server::responses::html(AddBookButton::render_form(&library))
   }
 }
 
 impl api::post_library_book::Router {
   pub(self) async fn endpoint(
-    Need(LibraryPathExt(library)): Need<LibraryPathExt>, Form(data): Form<AddBookForm>
+    Need(PELibrary(library)): Need<PELibrary>, Form(data): Form<AddBookForm>
   ) -> HttpResponse {
     let fragment = AddBookButton::render(&library.id);
     let book = Book {
