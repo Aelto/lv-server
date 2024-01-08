@@ -6,9 +6,9 @@ lv_server::endpoints!(BookList {
   get_library_book_list => GET "libraries/{library_id}/book-list"
 });
 
-pub enum BookListEvents {
-  Reload
-}
+lv_server::events!(BookListEvents {
+  Reload "from:body"
+});
 
 impl api::get_library_book_list::Router {
   pub async fn endpoint(Need(PELibrary(library)): Need<PELibrary>) -> HttpResponse {
@@ -22,20 +22,13 @@ impl api::get_library_book_list::Router {
 impl lv_server::Fragment<BookListEvents, api::Router> for BookList {
   const ID: &'static str = "BookList";
 }
-impl lv_server::WithTrigger for BookListEvents {
-  fn into_trigger(self) -> &'static str {
-    match self {
-      Self::Reload => "fetch-book-list"
-    }
-  }
-}
 
 impl BookList {
   pub fn render(library_id: &String, books: &Vec<Book>) -> Markup {
     html!(
       div.books
         hx-get={(api::get_library_book_list::url(&library_id))}
-        hx-trigger={"fetch-book-list from:body"} {
+        hx-trigger={(BookListEvents::Reload)} {
 
         ul {
           @for book in books {
