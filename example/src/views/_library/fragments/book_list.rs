@@ -4,6 +4,7 @@ pub struct BookList;
 
 lv_server::endpoints!(BookList {
   get_library_book_list => GET "libraries/{library_id}/book-list"
+  delete_book => DELETE "libraries/{library_id}/{book_id}"
 });
 
 lv_server::events!(BookListEvents {
@@ -19,6 +20,19 @@ impl api::get_library_book_list::Router {
   }
 }
 
+impl api::delete_book::Router {
+  pub async fn endpoint(
+    Need((PELibrary(library), PEBook(book))): Need<(PELibrary, PEBook)>
+  ) -> HttpResponse {
+    if book.fk_library != library.id {
+      return actix_web::error::ErrorConflict("library/book mismatch").into();
+    }
+
+    book.delete().unwrap();
+    lv_server::responses::empty_html()
+  }
+}
+
 impl lv_server::Fragment<BookListEvents, api::Router> for BookList {
   const ID: &'static str = "BookList";
 }
@@ -30,10 +44,14 @@ impl BookList {
         hx-get={(api::get_library_book_list::url(&library_id))}
         hx-trigger={(BookListEvents::Reload)} {
 
-        ul {
+        ul hx-swap="outerHTML" hx-target="closest li" {
           @for book in books {
             li {
               a href={"?book="(book.id)} {(book.title)}
+              button
+                hx-confirm={"Delete book "(book.title)"?"}
+                hx-delete={(api::delete_book::url(library_id, &book.id))}
+                {"delete"}
             }
           }
         }

@@ -45,6 +45,15 @@ impl Book {
 
     Ok(())
   }
+
+  pub fn delete(self) -> AppResult<()> {
+    let books = Self::find_all().unwrap();
+    let books: Vec<Self> = books.into_iter().filter(|b| b.id != self.id).collect();
+
+    db::write("books".to_owned(), &books)?;
+
+    Ok(())
+  }
 }
 
 impl maud::Render for Book {

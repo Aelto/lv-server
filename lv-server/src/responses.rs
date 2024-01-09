@@ -3,6 +3,10 @@ use actix_web::{
   HttpResponse
 };
 
+pub fn empty_html() -> HttpResponse {
+  html(maud::html!())
+}
+
 pub fn as_html(body: &impl maud::Render) -> HttpResponse {
   html(body.render())
 }
