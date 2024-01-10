@@ -25,7 +25,14 @@ impl api::delete_book::Router {
     Need((PELibrary(library), PEBook(book))): Need<(PELibrary, PEBook)>
   ) -> HttpResponse {
     if book.fk_library != library.id {
-      return actix_web::error::ErrorConflict("library/book mismatch").into();
+      let view = BookList::render_book(&library.id, &book);
+
+      return lv_server::responses::html(html!(
+        (view)
+        div id="alerts" hx-swap-oob="true" {
+          "library / book mismatch"
+        }
+      ));
     }
 
     book.delete().unwrap();
@@ -46,16 +53,22 @@ impl BookList {
 
         ul hx-swap="outerHTML" hx-target="closest li" {
           @for book in books {
-            li {
-              a href={"?book="(book.id)} {(book.title)}
-              button
-                hx-confirm={"Delete book "(book.title)"?"}
-                hx-delete={(api::delete_book::url(library_id, &book.id))}
-                {"delete"}
-            }
+            (Self::render_book(library_id, book))
           }
         }
 
+      }
+    )
+  }
+
+  pub fn render_book(library_id: &str, book: &Book) -> Markup {
+    html!(
+      li {
+        a href={"?book="(book.id)} {(book.title)}
+        button
+          hx-confirm={"Delete book "(book.title)"?"}
+          hx-delete={(api::delete_book::url(library_id, &book.id))}
+          {"delete"}
       }
     )
   }

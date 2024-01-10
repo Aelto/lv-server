@@ -14,8 +14,16 @@ pub fn page(content: Markup) -> Markup {
         a href="/" {"HOME"}
 
         (content)
-
+        (alerts())
       }
     }
+  )
+}
+
+/// Sets up the basic nodes for the alerts, htmx then handles the swapping of
+/// this node with toast notifications.
+fn alerts() -> Markup {
+  html!(
+    div id="alerts" class="hidden" {}
   )
 }

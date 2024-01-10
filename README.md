@@ -88,3 +88,20 @@ especially since some patterns are used often.
 Wait until the [PR: Support attribute spreading with iterators](https://github.com/lambda-fairy/maud/pull/408)
 is merged, after which we will implement functions to generate the attributes
 for us.
+
+# Problem 6: error handling
+The way of handling errors is different than what we'd get in REST APIs. For
+example the API returns the HMTL directly with the localized error in it rather
+than error codes for the front-end to handle.
+
+## solution 1: forms, inline errors
+A solution can be to include inline errors inside the form, next to the input fields
+
+## solution 2: buttons, inline errors
+For single buttons that are not part of a form a solution can be to return the
+button again with an error next to it. Inline-style.
+
+## solution 3: any, oob errors
+For general errors or out of form errors OOB errors can be used. For example:
+- a single `#toast` div where errors are temporarily inserted.
+- unique tags in the fragment meant to hold specific OOB messages
