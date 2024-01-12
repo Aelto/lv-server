@@ -20,9 +20,7 @@ impl lv_server::WithRouter for ViewProfileLibrary {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.route("/profile/{author_id}/{library_id}", get().to(index));
 
-    async fn index(
-      Need(PELibrary(lib)): Need<PELibrary>, params: Query<ViewProfileLibrary>
-    ) -> HttpResponse {
+    async fn index(Need(lib): Need<Library>, params: Query<ViewProfileLibrary>) -> HttpResponse {
       lv_server::responses::html(page(params.render(&lib)))
     }
   }

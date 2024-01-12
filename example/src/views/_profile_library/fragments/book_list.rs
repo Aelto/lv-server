@@ -12,7 +12,7 @@ lv_server::events!(BookListEvents {
 });
 
 impl api::get_library_book_list::Router {
-  pub async fn endpoint(Need(PELibrary(library)): Need<PELibrary>) -> HttpResponse {
+  pub async fn endpoint(Need(library): Need<Library>) -> HttpResponse {
     let books = library.books().unwrap();
     let view = BookList::render(&library.id, &books);
 
@@ -21,9 +21,7 @@ impl api::get_library_book_list::Router {
 }
 
 impl api::delete_book::Router {
-  pub async fn endpoint(
-    Need((PELibrary(library), PEBook(book))): Need<(PELibrary, PEBook)>
-  ) -> HttpResponse {
+  pub async fn endpoint(Need((library, book)): Need<(Library, Book)>) -> HttpResponse {
     if book.fk_library != library.id {
       let view = BookList::render_book(&library.id, &book);
 

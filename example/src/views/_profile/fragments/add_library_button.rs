@@ -10,13 +10,13 @@ lv_server::endpoints!(AddLibraryButton {
 });
 
 impl api::get_button::Router {
-  pub async fn endpoint(Need(PEAuthor(author)): Need<PEAuthor>) -> HttpResponse {
+  pub async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
     lv_server::responses::html(AddLibraryButton::render_button(&author.id))
   }
 }
 
 impl api::get_form::Router {
-  pub async fn endpoint(Need(PEAuthor(author)): Need<PEAuthor>) -> HttpResponse {
+  pub async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
     lv_server::responses::html(AddLibraryButton::render_form(&author.id))
   }
 }
@@ -26,9 +26,7 @@ pub(super) struct FormPostLibrary {
   title: String
 }
 impl api::post_library::Router {
-  pub async fn endpoint(
-    Need(PEAuthor(author)): Need<PEAuthor>, form: Form<FormPostLibrary>
-  ) -> HttpResponse {
+  pub async fn endpoint(Need(author): Need<Author>, form: Form<FormPostLibrary>) -> HttpResponse {
     let form = form.into_inner();
     let _ = Library {
       title: form.title,

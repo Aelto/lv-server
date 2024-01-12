@@ -11,7 +11,7 @@ impl WithRouter for ViewProfile {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.route("/profile/{author_id}", get().to(index));
 
-    async fn index(Need(PEAuthor(author)): Need<PEAuthor>) -> HttpResponse {
+    async fn index(Need(author): Need<Author>) -> HttpResponse {
       lv_server::responses::html(page(ViewProfile::render(&author)))
     }
   }

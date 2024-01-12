@@ -11,7 +11,7 @@ lv_server::events!(AuthorLibraryListEvents {
 });
 
 impl api::get_author_library_list::Router {
-  async fn endpoint(Need(PEAuthor(author)): Need<PEAuthor>) -> HttpResponse {
+  async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
     let libraries = author.libraries().unwrap();
 
     lv_server::responses::html(AuthorLibraryList::render(&author, &libraries))

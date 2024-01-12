@@ -1,9 +1,7 @@
 use crate::prelude::*;
 
-pub struct PELibrary(pub Library);
-
 #[lv_server::async_trait]
-impl lv_server::PathExtractor for PELibrary {
+impl lv_server::PathExtractor for Library {
   type Params = String;
 
   const ID: &'static str = "PELibrary";
@@ -12,14 +10,12 @@ impl lv_server::PathExtractor for PELibrary {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Library::find_by_id(&params).unwrap().map(|l| Self(l))
+    Library::find_by_id(&params).unwrap()
   }
 }
 
-pub struct PEBook(pub Book);
-
 #[lv_server::async_trait]
-impl lv_server::PathExtractor for PEBook {
+impl lv_server::PathExtractor for Book {
   type Params = String;
 
   const ID: &'static str = "PEBook";
@@ -28,14 +24,12 @@ impl lv_server::PathExtractor for PEBook {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Book::find_by_id(&params).unwrap().map(|l| Self(l))
+    Book::find_by_id(&params).unwrap()
   }
 }
 
-pub struct PEAuthor(pub Author);
-
 #[lv_server::async_trait]
-impl lv_server::PathExtractor for PEAuthor {
+impl lv_server::PathExtractor for Author {
   type Params = String;
 
   const ID: &'static str = "PEAuthor";
@@ -44,6 +38,6 @@ impl lv_server::PathExtractor for PEAuthor {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Author::find_by_id(&params).unwrap().map(|l| Self(l))
+    Author::find_by_id(&params).unwrap()
   }
 }
