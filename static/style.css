@@ -1,7 +1,13 @@
 body {
-  padding: 1em;
+  margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+header {
+  padding: 1em;
+  border-bottom: solid 1px whitesmoke;
+}
+
 
 form label {
   display: block;
@@ -24,8 +30,18 @@ form label {
 }
 
 input,
-label {
+label,
+textarea {
   display: block;
+  border-radius: 6px;
+  outline: none;
+  border: solid 1px grey;
+  padding: 1em;
+  margin: 1em;
+}
+
+button {
+  font-size: 1em;
 }
 
 
@@ -46,19 +62,22 @@ label {
   0% {
     transform: translate(0%, 0%);
   }
+
   5% {
     transform: translate(-100%, 0%);
   }
 
-  
+
   90% {
     transform: translate(-100%, 0%);
     opacity: 1;
   }
+
   95% {
     opacity: 0;
     transform: translate(-100%, 0%);
   }
+
   100% {
     transform: translate(0%, 0%);
     opacity: 0;

@@ -11,7 +11,9 @@ impl lv_server::Fragment<(), api::Router> for Header {
 impl Header {
   pub fn render() -> Markup {
     html!(
-      h1 {a href="/" {"Books"}}
+      header {
+        h1 {a href="/" {"Books"}}
+      }
     )
   }
 }

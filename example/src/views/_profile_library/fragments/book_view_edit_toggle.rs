@@ -42,7 +42,9 @@ impl BookViewEditToggle {
       div.document hx-swap="outerHTML" hx-target="this" {
         h1 {(book.title)}
         div.actions {
-          button hx-get={(api::get_edit_form::url(&book.fk_library, &book.id))} {"Edit book"}
+          button
+            hx-get={(api::get_edit_form::url(&book.fk_library, &book.id))}
+            {"Edit book"}
         }
 
         pre {(book.content)}
@@ -52,11 +54,16 @@ impl BookViewEditToggle {
 
   pub fn render_edit_form(book: &Book) -> Markup {
     html!(
-      div.document hx-swap="outerHTML" hx-target="this" {
+      div.document
+        hx-swap="outerHTML"
+        hx-target="this"
+      {
         form hx-put={(api::put_library_book::url(&book.fk_library, &book.id))} {
           div {
             button {"save"}
-            button hx-get={(api::get_index::url(&book.fk_library, &book.id))} {"cancel"}
+            button
+              hx-get={(api::get_index::url(&book.fk_library, &book.id))}
+              {"cancel"}
           }
           input name="title" value={(book.title)};
           textarea name="content" {(book.content)}
