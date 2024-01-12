@@ -2,12 +2,14 @@ use crate::prelude::*;
 
 static TABLE: &'static str = "libraries";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Library {
   #[serde(default)]
   pub id: String,
 
-  pub title: String
+  pub title: String,
+
+  pub fk_author: String
 }
 
 impl Library {
@@ -15,14 +17,15 @@ impl Library {
     Ok(db::read(TABLE)?.unwrap_or_default())
   }
 
-  pub fn add(mut self) -> AppResult<()> {
+  pub fn add(mut self, author: String) -> AppResult<Self> {
     self.id = nanoid::nanoid!();
+    self.fk_author = author;
 
     let mut all = Self::find_all()?;
-    all.push(self);
+    all.push(self.clone());
     db::write(TABLE.to_owned(), &all)?;
 
-    Ok(())
+    Ok(self)
   }
 
   pub fn find_by_id(id: &str) -> AppResult<Option<Self>> {
@@ -35,6 +38,12 @@ impl Library {
     let all = Self::find_all()?;
 
     Ok(all.into_iter().find(|l| l.title == title))
+  }
+
+  pub fn find_by_author(author: &str) -> AppResult<Vec<Self>> {
+    let all = Self::find_all()?;
+
+    Ok(all.into_iter().filter(|l| l.fk_author == author).collect())
   }
 
   pub fn books(&self) -> AppResult<Vec<Book>> {

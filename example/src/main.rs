@@ -29,8 +29,9 @@ async fn main() -> Result<(), std::io::Error> {
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   use lv_server::View;
 
-  views::ViewIndex::router(cfg);
-  views::ViewLibrary::router(cfg);
+  views::ViewHome::router(cfg);
+  views::ViewProfile::router(cfg);
+  views::ViewProfileLibrary::router(cfg);
 
   cfg.service(actix_files::Files::new("/static", "./static"));
 }

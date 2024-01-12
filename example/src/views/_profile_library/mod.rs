@@ -3,7 +3,7 @@ use crate::prelude::*;
 pub mod fragments;
 
 #[derive(Debug, Deserialize)]
-pub struct ViewLibrary {
+pub struct ViewProfileLibrary {
   book: Option<String>
 }
 
@@ -12,22 +12,23 @@ impl
     fragments::AddBookButton,
     fragments::BookList,
     fragments::BookViewEditToggle
-  )> for ViewLibrary
+  )> for ViewProfileLibrary
 {
 }
-impl lv_server::WithRouter for ViewLibrary {
+
+impl lv_server::WithRouter for ViewProfileLibrary {
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.route("/libraries/{library_id}", get().to(index));
+    cfg.route("/profile/{author_id}/{library_id}", get().to(index));
 
     async fn index(
-      Need(PELibrary(lib)): Need<PELibrary>, params: Query<ViewLibrary>
+      Need(PELibrary(lib)): Need<PELibrary>, params: Query<ViewProfileLibrary>
     ) -> HttpResponse {
       lv_server::responses::html(page(params.render(&lib)))
     }
   }
 }
 
-impl ViewLibrary {
+impl ViewProfileLibrary {
   fn render(&self, lib: &Library) -> Markup {
     html!(
       header {

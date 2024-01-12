@@ -49,9 +49,14 @@ impl BookList {
     html!(
       div.books
         hx-get={(api::get_library_book_list::url(&library_id))}
-        hx-trigger={(BookListEvents::Reload)} {
+        hx-trigger={(BookListEvents::Reload)}
+        hx-swap="outerHTML"
+        hx-target="this" {
 
-        ul hx-swap="outerHTML" hx-target="closest li" {
+        ul
+          // for the deletion
+          hx-swap="outerHTML"
+          hx-target="closest li" {
           @for book in books {
             (Self::render_book(library_id, book))
           }

@@ -11,8 +11,7 @@ pub fn page(content: Markup) -> Markup {
         link href="/static/style.css" rel="stylesheet";
       }
       body {
-        a href="/" {"HOME"}
-
+        (crate::fragments::Header::render())
         (content)
         (alerts())
       }

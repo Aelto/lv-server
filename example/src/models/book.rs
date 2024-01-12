@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+static TABLE: &'static str = "books";
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Book {
   #[serde(default)]
@@ -16,7 +18,7 @@ pub struct Book {
 
 impl Book {
   pub fn find_all() -> AppResult<Vec<Book>> {
-    Ok(db::read("books")?.unwrap_or_default())
+    Ok(db::read(TABLE)?.unwrap_or_default())
   }
 
   pub fn find_by_id(id: &str) -> AppResult<Option<Self>> {
@@ -31,7 +33,7 @@ impl Book {
 
     let mut all = Self::find_all()?;
     all.push(self);
-    db::write("books".to_owned(), &all)?;
+    db::write(TABLE.to_owned(), &all)?;
 
     Ok(())
   }
@@ -41,7 +43,7 @@ impl Book {
     let mut books: Vec<Self> = books.into_iter().filter(|b| b.id != self.id).collect();
 
     books.push(self.clone());
-    db::write("books".to_owned(), &books)?;
+    db::write(TABLE.to_owned(), &books)?;
 
     Ok(())
   }
@@ -50,7 +52,7 @@ impl Book {
     let books = Self::find_all().unwrap();
     let books: Vec<Self> = books.into_iter().filter(|b| b.id != self.id).collect();
 
-    db::write("books".to_owned(), &books)?;
+    db::write(TABLE.to_owned(), &books)?;
 
     Ok(())
   }

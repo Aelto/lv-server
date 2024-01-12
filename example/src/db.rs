@@ -15,11 +15,17 @@ static CELL: OnceLock<Mutex<RefCell<HashMap<DbKey, DbValue>>>> = OnceLock::new()
 pub fn init() {
   CELL.get_or_init(|| Mutex::new(RefCell::new(HashMap::new())));
 
-  let lib = crate::models::Library {
-    title: "lorem".to_owned(),
+  let author = crate::models::Author {
+    handle: "Consectitur".to_owned(),
     id: String::new()
   };
-  lib.add().unwrap();
+  let author = author.add().unwrap();
+
+  let lib = crate::models::Library {
+    title: "Nook".to_owned(),
+    ..Default::default()
+  };
+  lib.add(author.id).unwrap();
 
   for lib in crate::models::Library::find_all().unwrap() {
     let book = crate::models::Book {
