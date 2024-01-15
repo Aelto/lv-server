@@ -32,7 +32,7 @@ pub fn events(input: TokenStream) -> TokenStream {
 
 mod prelude {
 
-  pub use nom::bytes::complete::{tag, take_until1, take_while};
+  pub use nom::bytes::complete::{tag, take_until1, take_while, take_while1};
   pub use nom::error::ParseError;
   pub use nom::multi::many0;
   pub use nom::IResult;

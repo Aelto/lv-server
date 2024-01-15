@@ -44,12 +44,14 @@ impl Endpoint {
     Ok((i, param.to_owned()))
   }
 
-  pub fn emit(&self, router_name: &str) -> proc_macro2::TokenStream {
+  pub fn emit(
+    &self, router_name: &str, router_type: super::RouterType
+  ) -> proc_macro2::TokenStream {
     let name = format_ident!("{}", self.name);
     let route = &self.route;
 
     let url_fn = self.emit_url_fn(router_name);
-    let route_fn = self.emit_route_fn(router_name);
+    let route_fn = self.emit_route_fn(router_name, router_type);
     let router = self.emit_router();
 
     let output = quote::quote!(
@@ -73,6 +75,7 @@ impl Endpoint {
     quote::quote!(
       pub fn url(#(#params : &str),*) -> String {
         use lv_server::Fragment;
+        use lv_server::View;
         let mut base = super::super::#router_name::url("");
         base.push_str(&format!(#route));
         base
@@ -80,9 +83,27 @@ impl Endpoint {
     )
   }
 
-  fn emit_route_fn(&self, router_name: &str) -> proc_macro2::TokenStream {
+  fn emit_route_fn(
+    &self, router_name: &str, router_type: super::RouterType
+  ) -> proc_macro2::TokenStream {
     let router_name = format_ident!("{}", router_name);
     let verb = format_ident!("{}", self.verb.to_lowercase());
+    let route_fn = match router_type {
+      crate::endpoints::RouterType::Fragment => quote::quote!(
+        super::super::#router_name::fragment_route(
+          cfg,
+          URL,
+          actix_web::web::#verb().to(handler)
+        );
+      ),
+      crate::endpoints::RouterType::View => quote::quote!(
+        super::super::#router_name::view_route(
+          cfg,
+          URL,
+          actix_web::web::#verb().to(handler)
+        );
+      )
+    };
 
     quote::quote!(
       pub fn route<F, ARGS>(cfg: &mut actix_web::web::ServiceConfig, handler: F)
@@ -92,11 +113,8 @@ impl Endpoint {
         F::Output: actix_web::Responder + 'static
       {
         use lv_server::Fragment;
-        super::super::#router_name::fragment_route(
-          cfg,
-          URL,
-          actix_web::web::#verb().to(handler)
-        );
+        use lv_server::View;
+        #route_fn
       }
     )
   }
