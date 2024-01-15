@@ -7,13 +7,13 @@ pub struct ViewProfile;
 
 impl lv_server::View<(fragments::AddLibraryButton, fragments::AuthorLibraryList)> for ViewProfile {}
 
-impl WithRouter for ViewProfile {
-  fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.route("/profile/{author_id}", get().to(index));
+lv_server::endpoints!(ViewProfile as view {
+  get_index => GET "/profile/{author_id}"
+});
 
-    async fn index(Need(author): Need<Author>) -> HttpResponse {
-      lv_server::responses::html(page(ViewProfile::render(&author)))
-    }
+impl api::get_index::Router {
+  async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
+    lv_server::responses::html(page(ViewProfile::render(&author)))
   }
 }
 

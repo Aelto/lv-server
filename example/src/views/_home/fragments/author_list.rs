@@ -28,7 +28,7 @@ impl AuthorList {
       ul {
         @for author in authors {
           li {
-            a href={"/profile/"(author.id)} {(author.handle)}
+            a href={(crate::views::_profile::api::get_index::url(&author.id))} {(author.handle)}
           }
         }
       }

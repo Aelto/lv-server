@@ -33,7 +33,7 @@ impl AuthorLibraryList {
         {
           @for library in libraries {
             li {
-              a href={"/profile/"(library.fk_author)"/"(library.id)} {(library.title)}
+              a href={(crate::views::_profile_library::api::get_index::url(&library.id))} {(library.title)}
             }
           }
       }

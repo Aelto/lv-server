@@ -3,9 +3,7 @@ use crate::prelude::*;
 pub mod fragments;
 
 #[derive(Debug, Deserialize)]
-pub struct ViewProfileLibrary {
-  book: Option<String>
-}
+pub struct ViewProfileLibrary;
 
 impl
   lv_server::View<(
@@ -16,18 +14,25 @@ impl
 {
 }
 
-impl lv_server::WithRouter for ViewProfileLibrary {
-  fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.route("/profile/{author_id}/{library_id}", get().to(index));
+lv_server::endpoints!(ViewProfileLibrary as view {
+  get_index => GET "/library/{library_id}"
+  get_with_book => GET "/library/{library_id}/{book_id}"
+});
 
-    async fn index(Need(lib): Need<Library>, params: Query<ViewProfileLibrary>) -> HttpResponse {
-      lv_server::responses::html(page(params.render(&lib)))
-    }
+impl api::get_index::Router {
+  async fn endpoint(Need(lib): Need<Library>) -> HttpResponse {
+    lv_server::responses::html(page(ViewProfileLibrary::render(&lib, None)))
+  }
+}
+
+impl api::get_with_book::Router {
+  async fn endpoint(Need((lib, book)): Need<(Library, Book)>) -> HttpResponse {
+    lv_server::responses::html(page(ViewProfileLibrary::render(&lib, Some(&book))))
   }
 }
 
 impl ViewProfileLibrary {
-  fn render(&self, lib: &Library) -> Markup {
+  fn render(lib: &Library, book: Option<&Book>) -> Markup {
     html!(
       header {
         h1 {"Library: "(lib.title)}
@@ -42,10 +47,8 @@ impl ViewProfileLibrary {
           }
         }
 
-        @if let Some(book_id) = &self.book {
-          @if let Ok(Some(book)) = lib.book(&book_id) {
-            (fragments::BookViewEditToggle::render(&book))
-          }
+        @if let Some(book) =  book {
+          (fragments::BookViewEditToggle::render(&book))
         }
       }
     )

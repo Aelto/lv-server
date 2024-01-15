@@ -67,7 +67,7 @@ impl BookList {
   pub fn render_book(library_id: &str, book: &Book) -> Markup {
     html!(
       li {
-        a href={"?book="(book.id)} {(book.title)}
+        a href={(super::super::api::get_with_book::url(library_id, &book.id))} {(book.title)}
         button
           hx-confirm={"Delete book "(book.title)"?"}
           hx-delete={(api::delete_book::url(library_id, &book.id))}

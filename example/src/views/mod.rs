@@ -1,8 +1,8 @@
-mod _home;
+pub mod _home;
 pub use _home::ViewHome;
 
-mod _profile;
+pub mod _profile;
 pub use _profile::ViewProfile;
 
-mod _profile_library;
+pub mod _profile_library;
 pub use _profile_library::ViewProfileLibrary;
