@@ -9,11 +9,19 @@ pub struct Book {
 
   pub title: String,
 
-  #[serde(default)]
   pub content: String,
 
-  #[serde(default)]
   pub fk_library: String
+}
+
+impl Book {
+  pub async fn is_author(&self, author_id: &str) -> AppResult<bool> {
+    let Some(library) = Library::find_by_id(&self.fk_library)? else {
+      return Ok(false);
+    };
+
+    Ok(library.fk_author == author_id)
+  }
 }
 
 impl Book {

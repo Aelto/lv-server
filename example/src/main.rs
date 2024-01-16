@@ -1,10 +1,11 @@
-pub type AppResult<T> = Result<T, Box<dyn std::error::Error>>;
-
 pub mod db;
+pub mod dev;
 pub mod extractors;
+pub mod exts;
 pub mod fragments;
 pub mod models;
 pub mod page;
+pub mod result;
 pub mod views;
 
 pub mod prelude;

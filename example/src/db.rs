@@ -1,3 +1,5 @@
+use crate::prelude::*;
+
 use std::{
   cell::RefCell,
   collections::HashMap,
@@ -16,10 +18,11 @@ pub fn init() {
   CELL.get_or_init(|| Mutex::new(RefCell::new(HashMap::new())));
 
   let author = crate::models::Author {
-    handle: "Consectitur".to_owned(),
+    handle: "SignedUser".to_owned(),
     id: String::new()
   };
-  let author = author.add().unwrap();
+  author.add().unwrap();
+  let author = crate::dev::signed_user();
 
   let lib = crate::models::Library {
     title: "Nook".to_owned(),
@@ -39,7 +42,7 @@ pub fn init() {
   }
 }
 
-pub fn read<T>(key: &str) -> Result<Option<T>, Box<dyn std::error::Error>>
+pub fn read<T>(key: &str) -> AppResult<Option<T>>
 where
   T: DeserializeOwned
 {
@@ -49,13 +52,13 @@ where
         Some(value) => Ok(serde_json::from_slice(value.as_ref())?),
         None => Ok(None)
       },
-      Err(e) => Err(Box::new(e))
+      Err(_) => Err(AppError::InternalServerError("DB:CELL.get()"))
     },
     None => Ok(None)
   }
 }
 
-pub fn write(key: String, value: &impl Serialize) -> Result<(), Box<dyn std::error::Error>> {
+pub fn write(key: String, value: &impl Serialize) -> AppResult<()> {
   match CELL.get() {
     Some(mutex) => match mutex.lock() {
       Ok(cell) => {
@@ -65,7 +68,7 @@ pub fn write(key: String, value: &impl Serialize) -> Result<(), Box<dyn std::err
 
         Ok(())
       }
-      Err(e) => Err(Box::new(e))
+      Err(_) => Err(AppError::InternalServerError("DB:write"))
     },
     None => Ok(())
   }
