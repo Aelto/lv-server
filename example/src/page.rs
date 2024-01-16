@@ -9,6 +9,7 @@ pub fn page(content: Markup) -> Markup {
         title { "lv_server" }
         script src="/static/htmx.min.js" {}
         link href="/static/style.css" rel="stylesheet";
+        meta name="htmx-config" content="{\"defaultSwapStyle\":\"outerHTML\"}";
       }
       body {
         (crate::fragments::Header::render())
