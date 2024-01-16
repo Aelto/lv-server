@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-maud = "0.25.0"
+maud = { version = "0.25.0", features = ["actix-web"] }
 serde = { version = "1.0.193", features = ["serde_derive"] }
 actix-web = "4.4.0"
 nanoid = "0.4.0"
