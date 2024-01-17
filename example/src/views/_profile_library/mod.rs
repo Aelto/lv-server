@@ -21,19 +21,23 @@ lv_server::endpoints!(ViewProfileLibrary as view {
 
 impl api::get_index::Router {
   async fn endpoint(Need(lib): Need<Library>) -> HttpResponse {
-    lv_server::responses::html(page(ViewProfileLibrary::render(&lib, None)))
+    let view = ViewProfileLibrary::render(&lib, None).await;
+
+    lv_server::responses::html(page(view.render()))
   }
 }
 
 impl api::get_with_book::Router {
   async fn endpoint(Need((lib, book)): Need<(Library, Book)>) -> HttpResponse {
-    lv_server::responses::html(page(ViewProfileLibrary::render(&lib, Some(&book))))
+    let view = ViewProfileLibrary::render(&lib, Some(&book)).await;
+
+    lv_server::responses::html(page(view.render()))
   }
 }
 
 impl ViewProfileLibrary {
-  fn render(lib: &Library, book: Option<&Book>) -> Markup {
-    html!(
+  async fn render(lib: &Library, book: Option<&Book>) -> TemplateResponse {
+    Ok(html!(
       h1 {"Library: "(lib.title)}
 
       div.library {
@@ -42,6 +46,10 @@ impl ViewProfileLibrary {
             (fragments::AddBookButton::render(&lib.id))
             hr;
             (fragments::BookList::render(&lib.id, &books))
+            hr;
+            @let recommandations = lib.recommended_books().await?;
+
+            (fragments::BookListRecommandations::render(&recommandations))
           }
         }
 
@@ -49,6 +57,6 @@ impl ViewProfileLibrary {
           (fragments::BookViewEditToggle::render(&book))
         }
       }
-    )
+    ))
   }
 }
