@@ -13,7 +13,7 @@ pub fn page(content: Markup) -> Markup {
       }
       body {
         (crate::fragments::Header::render())
-        (content)
+        div id="content" {(content)}
         (alerts())
       }
     }

@@ -34,9 +34,7 @@ impl api::get_with_book::Router {
 impl ViewProfileLibrary {
   fn render(lib: &Library, book: Option<&Book>) -> Markup {
     html!(
-      header {
-        h1 {"Library: "(lib.title)}
-      }
+      h1 {"Library: "(lib.title)}
 
       div.library {
         @if let Ok(books) = lib.books() {

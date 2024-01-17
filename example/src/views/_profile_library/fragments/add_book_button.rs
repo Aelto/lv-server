@@ -73,9 +73,11 @@ impl AddBookButton {
           input type="text" name="title" placeholder="README" value="README";
         }
 
-        button {"Create book"}
-        button
-          hx-get={(api::get_library_add_book_button::url(&lib.id))} {"Cancel"}
+        div {
+          button {"Create book"}
+          button
+            hx-get={(api::get_library_add_book_button::url(&lib.id))} {"Cancel"}
+        }
       }
     )
   }
