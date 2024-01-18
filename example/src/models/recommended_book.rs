@@ -2,7 +2,7 @@ use nanoid::nanoid;
 
 use crate::prelude::*;
 
-static TABLE: &'static str = "liked-books";
+static TABLE: &'static str = "recommeded-books";
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct RecommendedBook {
@@ -15,7 +15,7 @@ pub struct RecommendedBook {
 }
 
 impl RecommendedBook {
-  pub fn add(mut self, library: String, author: String, book: String) -> AppResult<()> {
+  pub async fn add(mut self, library: String, author: String, book: String) -> AppResult<()> {
     self.id = nanoid!();
     self.fk_author = author;
     self.fk_book = book;

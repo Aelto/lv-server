@@ -7,8 +7,8 @@ pub struct ViewProfileLibrary;
 
 impl
   lv_server::View<(
-    fragments::AddBookButton,
-    fragments::BookList,
+    (fragments::AddBookButton, fragments::RecommendBookButton),
+    (fragments::BookList, fragments::BookListRecommendations),
     fragments::BookViewEditToggle
   )> for ViewProfileLibrary
 {
@@ -47,9 +47,10 @@ impl ViewProfileLibrary {
             hr;
             (fragments::BookList::render(&lib.id, &books))
             hr;
-            @let recommandations = lib.recommended_books().await?;
+            @let recommendations = lib.recommended_books().await?;
 
-            (fragments::BookListRecommandations::render(&recommandations))
+            (fragments::RecommendBookButton::render(&lib.id))
+            (fragments::BookListRecommendations::render(&lib.id, &recommendations))
           }
         }
 

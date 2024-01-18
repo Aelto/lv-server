@@ -1,32 +1,36 @@
 use crate::prelude::*;
 
-pub struct BookListRecommandations;
+pub struct BookListRecommendations;
 
-lv_server::endpoints!(BookListRecommandations {
+impl lv_server::Fragment<BookListRecommendationsEvents, api::Router> for BookListRecommendations {
+  const ID: &'static str = "BookListRecommendations";
+}
+
+lv_server::endpoints!(BookListRecommendations {
   get_index => GET "{library_id}"
 });
 
-lv_server::events!(BookListRecommandationsEvents {
+lv_server::events!(BookListRecommendationsEvents {
   Reload "from:body"
 });
-
-impl lv_server::Fragment<BookListRecommandationsEvents, api::Router> for BookListRecommandations {
-  const ID: &'static str = "BookListRecommandations";
-}
 
 impl api::get_index::Router {
   pub async fn endpoint(Need(library): Need<Library>) -> AppResponse {
     let books = library.recommended_books().await?;
-    let view = BookListRecommandations::render(&books);
+    let view = BookListRecommendations::render(&library.id, &books);
 
     Ok(lv_server::responses::html(view))
   }
 }
 
-impl BookListRecommandations {
-  pub fn render(books: &Vec<Book>) -> Markup {
+impl BookListRecommendations {
+  pub fn render(library_id: &str, books: &Vec<Book>) -> Markup {
     html!(
-      section class="recommended-books" {
+      section class="recommended-books"
+        hx-get={(api::get_index::url(library_id))}
+        hx-trigger={(BookListRecommendationsEvents::Reload)}
+        hx-target="this" {
+
         div {"Recommended books"}
 
         ul {

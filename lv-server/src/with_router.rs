@@ -50,3 +50,21 @@ where
       .configure(<R4 as WithRouter>::router);
   }
 }
+
+impl<R1, R2, R3, R4, R5> WithRouter for (R1, R2, R3, R4, R5)
+where
+  R1: WithRouter,
+  R2: WithRouter,
+  R3: WithRouter,
+  R4: WithRouter,
+  R5: WithRouter
+{
+  fn router(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg
+      .configure(<R1 as WithRouter>::router)
+      .configure(<R2 as WithRouter>::router)
+      .configure(<R3 as WithRouter>::router)
+      .configure(<R4 as WithRouter>::router)
+      .configure(<R5 as WithRouter>::router);
+  }
+}

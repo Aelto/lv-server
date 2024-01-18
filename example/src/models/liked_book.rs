@@ -18,6 +18,24 @@ impl LikedBook {
 }
 
 impl LikedBook {
+  pub async fn book(&self) -> AppResult<Option<Book>> {
+    Book::find_by_id(&self.fk_book)
+  }
+
+  pub async fn as_books(liked_books: &Vec<Self>) -> AppResult<Vec<Book>> {
+    let mut out = Vec::with_capacity(liked_books.len());
+
+    for like in liked_books {
+      if let Some(book) = Book::find_by_id(&like.fk_book)? {
+        out.push(book);
+      }
+    }
+
+    Ok(out)
+  }
+}
+
+impl LikedBook {
   pub fn find_all() -> AppResult<Vec<LikedBook>> {
     Ok(db::read(TABLE)?.unwrap_or_default())
   }
@@ -26,6 +44,12 @@ impl LikedBook {
     let all = Self::find_all()?;
 
     Ok(all.into_iter().find(|l| l.id == id))
+  }
+
+  pub async fn find_by_author(author: &str) -> AppResult<Vec<Self>> {
+    let all = Self::find_all()?;
+
+    Ok(all.into_iter().filter(|l| l.fk_author == author).collect())
   }
 
   pub async fn find_by_author_and_book(author: &str, book: &str) -> AppResult<Option<Self>> {
