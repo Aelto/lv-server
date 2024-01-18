@@ -17,6 +17,10 @@ pub fn html(body: maud::Markup) -> HttpResponse {
     .body(body.into_string())
 }
 
+pub fn no_content() -> HttpResponse {
+  HttpResponse::NoContent().finish()
+}
+
 pub fn trigger(mut res: HttpResponse, event: &'static str) -> HttpResponse {
   let headers = res.headers_mut();
 

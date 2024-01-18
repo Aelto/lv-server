@@ -96,13 +96,11 @@ impl BookViewEditToggle {
   pub fn render(book: &Book) -> Markup {
     html!(
       div.document {
-        h1 {(book.title)}
-
         div.actions
           hx-get={(api::get_actions::url(&book.fk_library, &book.id))}
           hx-trigger="load" {}
 
-        pre {(book.content)}
+        (book)
       }
     )
   }

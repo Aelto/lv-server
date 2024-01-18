@@ -37,7 +37,7 @@ impl api::put_approve_book::Router {
     recommandation.approved = true;
     recommandation.update().await?;
 
-    Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::empty_html()))
+    Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::no_content()))
   }
 }
 
