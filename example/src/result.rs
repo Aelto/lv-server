@@ -115,6 +115,26 @@ mod error {
   ////////////////////////////////////////////////////////////////////////////////
   // From implementations
 
+  impl From<surrealdb::Error> for AppError {
+    fn from(value: surrealdb::Error) -> Self {
+      println!("error: {value}");
+
+      Self::InternalServerError("database_error")
+    }
+  }
+
+  impl From<surrealdb::error::Db> for AppError {
+    fn from(value: surrealdb::error::Db) -> Self {
+      surrealdb::Error::Db(value).into()
+    }
+  }
+
+  impl From<surrealdb::error::Api> for AppError {
+    fn from(value: surrealdb::error::Api) -> Self {
+      surrealdb::Error::Api(value).into()
+    }
+  }
+
   impl From<actix_web::error::BlockingError> for AppError {
     fn from(value: actix_web::error::BlockingError) -> Self {
       println!("error: {value}");
