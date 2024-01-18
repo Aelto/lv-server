@@ -14,10 +14,7 @@ impl api::get_index::Router {
     lv_server::responses::html(page(html!(
 
       h2 {"Recent articles"}
-      div
-        hx-get={(fragments::recent_article_list::api::get_list::url())}
-        hx-trigger="load"
-        {}
+      (fragments::RecentArticleList::render_load_fetcher())
 
       h2 {"All authors"}
       div

@@ -24,7 +24,15 @@ impl lv_server::Fragment<(), ()> for RecentArticleList {
 }
 
 impl RecentArticleList {
-  pub fn render(books: &Vec<Book>) -> Markup {
+  pub fn render_load_fetcher() -> Markup {
+    html!(
+      div
+        hx-get={(api::get_list::url())}
+        hx-trigger="load"
+        {}
+    )
+  }
+  fn render(books: &Vec<Book>) -> Markup {
     html!(
       ul {
         @for book in books {
