@@ -13,7 +13,7 @@ lv_server::endpoints!(RecentArticleList {
 
 impl api::get_list::Router {
   async fn endpoint() -> HttpResponse {
-    let books = Book::find_all().unwrap();
+    let books = Book::find_most_recent(10).await.unwrap_or_default();
 
     lv_server::responses::html(RecentArticleList::render(&books))
   }

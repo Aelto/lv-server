@@ -29,6 +29,17 @@ impl Book {
     Ok(db::read(TABLE)?.unwrap_or_default())
   }
 
+  pub async fn find_most_recent(page_size: usize) -> AppResult<Vec<Book>> {
+    let mut all = Self::find_all()?;
+    all.sort_by(|a, b| {
+      a.created_at
+        .partial_cmp(&b.created_at)
+        .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    Ok(all.into_iter().take(page_size).collect())
+  }
+
   pub fn find_by_id(id: &str) -> AppResult<Option<Self>> {
     let all = Self::find_all()?;
 
@@ -90,10 +101,8 @@ impl maud::Render for Book {
     };
 
     html!(
-      div.book {
-        div.title {(self.title)}
-        div.content {(maud::PreEscaped(rendered_markdown))}
-      }
+      div.title {(self.title)}
+      div.content {(maud::PreEscaped(rendered_markdown))}
     )
   }
 }
