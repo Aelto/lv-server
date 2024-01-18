@@ -10,7 +10,7 @@ impl lv_server::PathExtractor for Library {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Library::find_by_id(&params).unwrap()
+    Library::find_by_id(&params).unwrap_or_default()
   }
 }
 
@@ -24,7 +24,7 @@ impl lv_server::PathExtractor for Book {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Book::find_by_id(&params).unwrap()
+    Book::find_by_id(&params).unwrap_or_default()
   }
 }
 
@@ -38,6 +38,20 @@ impl lv_server::PathExtractor for Author {
   }
 
   async fn from_params(params: String) -> Option<Self> {
-    Author::find_by_id(&params).unwrap()
+    Author::find_by_id(&params).unwrap_or_default()
+  }
+}
+
+#[lv_server::async_trait]
+impl lv_server::PathExtractor for RecommendedBook {
+  type Params = String;
+
+  const ID: &'static str = "PERecommendedBook";
+  fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
+    Self::param_from_str(req, "recommended_book_id")
+  }
+
+  async fn from_params(params: String) -> Option<Self> {
+    Self::find_by_id(&params).unwrap_or_default()
   }
 }
