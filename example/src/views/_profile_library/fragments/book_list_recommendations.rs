@@ -51,8 +51,11 @@ impl BookListRecommendations {
         hx-get={(api::get_index::url(&library.id))}
         hx-target="this" {
 
-        (Self::render_approved_books(&approved))
-        @if is_author {
+        @if !approved.is_empty() {
+          (Self::render_approved_books(&approved))
+        }
+
+        @if is_author && !unapproved.is_empty() {
           (Self::render_unapproved_books(&unapproved))
         }
       }
@@ -63,7 +66,7 @@ impl BookListRecommendations {
     html!(
       div {"Recommended books"}
       ul {
-        @for (_,book) in recommendations {
+        @for (_, book) in recommendations {
           li {
             a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
           }
