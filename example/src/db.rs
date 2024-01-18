@@ -32,10 +32,8 @@ pub fn init() {
 
   for lib in crate::models::Library::find_all().unwrap() {
     let book = crate::models::Book {
-      content: String::new(),
-      id: String::new(),
       title: "lorem".to_owned(),
-      fk_library: String::new()
+      ..Default::default()
     };
 
     book.add(lib.id).unwrap();

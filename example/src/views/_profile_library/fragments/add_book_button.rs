@@ -32,10 +32,8 @@ impl api::post_library_book::Router {
   ) -> HttpResponse {
     let fragment = AddBookButton::render(&library.id);
     let book = Book {
-      id: String::new(),
       title: data.title,
-      content: String::new(),
-      fk_library: String::new()
+      ..Default::default()
     };
     book.add(library.id).unwrap();
 

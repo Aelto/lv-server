@@ -2,14 +2,14 @@ use crate::prelude::*;
 
 static TABLE: &'static str = "books";
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Book {
   #[serde(default)]
   pub id: String,
 
   pub title: String,
-
   pub content: String,
+  pub created_at: chrono::DateTime<chrono::Utc>,
 
   pub fk_library: String
 }
@@ -38,6 +38,7 @@ impl Book {
   pub fn add(mut self, library: String) -> AppResult<()> {
     self.id = nanoid::nanoid!();
     self.fk_library = library;
+    self.created_at = chrono::Utc::now();
 
     let mut all = Self::find_all()?;
     all.push(self);
