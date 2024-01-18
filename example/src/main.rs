@@ -11,20 +11,22 @@ pub mod views;
 pub mod prelude;
 
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() -> result::AppResult<()> {
   use actix_web::App;
   use actix_web::HttpServer;
 
   let port = 3000;
 
-  db::init();
+  db::connect("address", "username", "password", "namespace", "database").await?;
 
   println!("running server on http://localhost:{port}");
 
   HttpServer::new(move || App::new().configure(routes))
     .bind(format!("127.0.0.1:{}", port))?
     .run()
-    .await
+    .await?;
+
+  Ok(())
 }
 
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
