@@ -11,7 +11,9 @@ pub struct RecommendedBook {
 
   pub fk_library: String,
   pub fk_author: String,
-  pub fk_book: String
+  pub fk_book: String,
+
+  pub approved: bool
 }
 
 impl RecommendedBook {
