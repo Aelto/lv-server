@@ -20,6 +20,13 @@ body {
 
 }
 
+hr {
+  background-color: transparent;
+  border: solid 1px var(--var-fg);
+  opacity: 5%;
+  margin: 2em 0;
+}
+
 header,
 #content {
   padding: 1em;
@@ -36,6 +43,9 @@ form label {
 }
 
 .library .sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: 0;
   flex-shrink: 0;
 
   padding: 1em;
@@ -48,6 +58,8 @@ form label {
 
 label {
   display: block;
+  padding-bottom: 0;
+
 }
 
 input,
@@ -59,27 +71,29 @@ textarea {
   background-color: var(--var-gray);
   font-size: 1rem;
   color: var(--var-fg);
-  margin-top: 1em;
 }
 
 button {
   font-size: 1em;
-  /* background: var(--var-blue); */
   background-color: transparent;
   color: var(--var-green);
-  padding: 8px;
-  border-radius: 6px;
+  padding: .2em .8em;
   outline: none;
-  border: none;
+  border: solid 2px currentColor;
   cursor: pointer;
   font-weight: bold;
+  text-transform: uppercase;
 }
 
 button:hover {
-  text-decoration: underline;
+  background-color: var(--var-green);
+  color: var(--var-bg);
 }
 
-*+button {
+input+button,
+button+button,
+label+button,
+a+button {
   margin-left: 1em;
 }
 
@@ -88,7 +102,9 @@ a {
 }
 
 a:hover {
-  filter: brightness(110%);
+  background-color: var(--var-yellow);
+  color: var(--var-bg);
+  text-decoration: none;
 }
 
 
@@ -129,4 +145,13 @@ a:hover {
     transform: translate(0%, 0%);
     opacity: 0;
   }
+}
+
+section,
+.ptop {
+  padding-top: 1em;
+}
+
+.mtop {
+  margin-top: 1em;
 }

@@ -158,14 +158,15 @@ impl BookViewEditToggle {
         hx-target="this"
       {
         form hx-put={(api::put_library_book::url(&book.fk_library, &book.id))} {
-          div {
+          input name="title" value={(book.title)};
+          textarea class="mtop" name="content" {(book.content)}
+
+          div.mtop {
             button {"save"}
             button
               hx-get={(api::get_index::url(&book.fk_library, &book.id))}
               {"cancel"}
           }
-          input name="title" value={(book.title)};
-          textarea name="content" {(book.content)}
         }
       }
     )
