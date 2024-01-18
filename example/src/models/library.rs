@@ -63,21 +63,22 @@ impl Library {
     Ok(books.into_iter().find(|b| b.id == id))
   }
 
-  pub async fn recommended_books(&self) -> AppResult<(Vec<Book>, Vec<Book>)> {
+  pub async fn recommended_books(
+    &self
+  ) -> AppResult<(Vec<(RecommendedBook, Book)>, Vec<(RecommendedBook, Book)>)> {
     let recommendations = RecommendedBook::find_all_by_library(&self.id).await?;
     let mut approved = Vec::with_capacity(recommendations.len());
     let mut unapproved = Vec::new();
 
     // if/when the find_by_id becomes async it might be a good idea to join the
     // futures or to use a mpsc channel.
-    for rec in &recommendations {
+    for rec in recommendations {
       let book = Book::find_by_id(&rec.fk_book)?;
-
       if let Some(book) = book {
         if rec.approved {
-          approved.push(book);
+          approved.push((rec, book));
         } else {
-          unapproved.push(book);
+          unapproved.push((rec, book));
         }
       }
     }

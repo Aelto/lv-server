@@ -48,7 +48,7 @@ impl ViewProfileLibrary {
             (fragments::BookList::render(&lib.id, &books))
             hr;
             (fragments::RecommendBookButton::render(&lib.id))
-            (fragments::BookListRecommendations::render(&lib, dev::signed_user().id == lib.id).await.render())
+            (fragments::BookListRecommendations::render(&lib, dev::signed_user().id == lib.fk_author).await.render())
           }
         }
 

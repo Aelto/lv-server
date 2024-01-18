@@ -1,3 +1,5 @@
+use actix_web::error::ErrorUnauthorized;
+
 use crate::prelude::*;
 
 pub struct BookListRecommendations;
@@ -8,6 +10,7 @@ impl lv_server::Fragment<BookListRecommendationsEvents, api::Router> for BookLis
 
 lv_server::endpoints!(BookListRecommendations {
   get_index => GET "{library_id}"
+  put_approve_book => PUT "{library_id}/{recommended_book_id}"
 });
 
 lv_server::events!(BookListRecommendationsEvents {
@@ -20,6 +23,21 @@ impl api::get_index::Router {
       BookListRecommendations::render(&library, dev::signed_user().id == library.fk_author);
 
     Ok(lv_server::responses::html(view.await.render()))
+  }
+}
+
+impl api::put_approve_book::Router {
+  pub async fn endpoint(
+    Need((library, mut recommandation)): Need<(Library, RecommendedBook)>
+  ) -> AppResponse {
+    if library.fk_author != dev::signed_user().id {
+      return Ok(ErrorUnauthorized("insufficient_permissions").into());
+    }
+
+    recommandation.approved = true;
+    recommandation.update().await?;
+
+    Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::empty_html()))
   }
 }
 
@@ -41,11 +59,11 @@ impl BookListRecommendations {
     ))
   }
 
-  fn render_approved_books(books: &Vec<Book>) -> Markup {
+  fn render_approved_books(recommendations: &Vec<(RecommendedBook, Book)>) -> Markup {
     html!(
       div {"Recommended books"}
       ul {
-        @for book in books {
+        @for (_,book) in recommendations {
           li {
             a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
           }
@@ -54,22 +72,21 @@ impl BookListRecommendations {
     )
   }
 
-  fn render_unapproved_books(books: &Vec<Book>) -> Markup {
+  fn render_unapproved_books(recommendations: &Vec<(RecommendedBook, Book)>) -> Markup {
     html!(
       div {"Recommended books (need approval)"}
         ul {
-          @for book in books {
-            (Self::render_book_need_approval(&book))
+          @for (rec, book) in recommendations {
+            li {
+              a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
+              button
+                hx-confirm={"Approve recommendation for "(book.title)"?"}
+                hx-put={(api::put_approve_book::url(&book.fk_library, &rec.id))}
+                hx-target="closest li"
+                {"approve"}
+            }
           }
         }
-    )
-  }
-
-  fn render_book_need_approval(book: &Book) -> Markup {
-    html!(
-      li {
-        a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
-      }
     )
   }
 }

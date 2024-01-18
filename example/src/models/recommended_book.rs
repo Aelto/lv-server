@@ -55,7 +55,7 @@ impl RecommendedBook {
     Book::find_by_id(&self.fk_book)
   }
 
-  pub fn update(&self) -> AppResult<()> {
+  pub async fn update(&self) -> AppResult<()> {
     let all = Self::find_all().unwrap();
     let mut filtered: Vec<Self> = all.into_iter().filter(|b| b.id != self.id).collect();
 
