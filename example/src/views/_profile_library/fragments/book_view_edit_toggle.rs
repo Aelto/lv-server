@@ -100,7 +100,7 @@ impl BookViewEditToggle {
           hx-get={(api::get_actions::url(&book.fk_library, &book.id))}
           hx-trigger="load" {}
 
-        (book)
+        div.book.ptop {(book)}
       }
     )
   }

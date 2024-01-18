@@ -79,7 +79,7 @@ button {
   color: var(--var-green);
   padding: .2em .8em;
   outline: none;
-  border: solid 2px currentColor;
+  border: solid 2px var(--var-green);
   cursor: pointer;
   font-weight: bold;
   text-transform: uppercase;
@@ -154,4 +154,16 @@ section,
 
 .mtop {
   margin-top: 1em;
+}
+
+.flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
 }
