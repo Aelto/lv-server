@@ -10,14 +10,18 @@ lv_server::endpoints!(AddLibraryButton {
 });
 
 impl api::get_button::Router {
-  pub async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
-    lv_server::responses::html(AddLibraryButton::render_button(&author.id))
+  pub async fn endpoint(Need(author): Need<Author>) -> AppResponse {
+    Ok(lv_server::responses::html(AddLibraryButton::render_button(
+      author.id_res()?
+    )))
   }
 }
 
 impl api::get_form::Router {
-  pub async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
-    lv_server::responses::html(AddLibraryButton::render_form(&author.id))
+  pub async fn endpoint(Need(author): Need<Author>) -> AppResponse {
+    Ok(lv_server::responses::html(AddLibraryButton::render_form(
+      author.id_res()?
+    )))
   }
 }
 
@@ -26,18 +30,18 @@ pub(super) struct FormPostLibrary {
   title: String
 }
 impl api::post_library::Router {
-  pub async fn endpoint(Need(author): Need<Author>, form: Form<FormPostLibrary>) -> HttpResponse {
+  pub async fn endpoint(Need(author): Need<Author>, form: Form<FormPostLibrary>) -> AppResponse {
     let form = form.into_inner();
     let _ = Library {
       title: form.title,
       ..Default::default()
     }
-    .add(author.id.clone());
+    .create(&author.id);
 
     let view = AddLibraryButton::render_button(&author.id);
     let res = lv_server::responses::html(view);
 
-    super::AuthorLibraryListEvents::Reload.trigger(res)
+    Ok(super::AuthorLibraryListEvents::Reload.trigger(res))
   }
 }
 
@@ -46,20 +50,20 @@ impl lv_server::Fragment<(), api::Router> for AddLibraryButton {
 }
 
 impl AddLibraryButton {
-  pub fn render_button(author_id: &str) -> Markup {
+  pub fn render_button(author_id: &Id) -> Markup {
     html!(
       button
-        hx-get={(api::get_form::url(author_id))}
+        hx-get={(api::get_form::url(author_id.id()))}
         hx-target="this"
         hx-swap="outerHTML"
         {"Add library"}
     )
   }
 
-  fn render_form(author_id: &str) -> Markup {
+  fn render_form(author_id: &Id) -> Markup {
     html!(
       form
-        hx-post={(api::post_library::url(author_id))}
+        hx-post={(api::post_library::url(author_id.id()))}
         hx-target="this"
         hx-swap="outerHTML"
       {

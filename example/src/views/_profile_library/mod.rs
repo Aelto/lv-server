@@ -37,18 +37,21 @@ impl api::get_with_book::Router {
 
 impl ViewProfileLibrary {
   async fn render(lib: &Library, book: Option<&Book>) -> TemplateResponse {
+    let user = dev::signed_user().await;
+    let is_author = lib.is_author(&user)?;
+
     Ok(html!(
       h1 {"Library: "(lib.title)}
 
       div.library {
-        @if let Ok(books) = lib.books() {
+        @if let Some(books) = lib.books.value() {
           div.sidebar {
             (fragments::AddBookButton::render(&lib.id))
             hr;
             (fragments::BookList::render(&lib.id, &books))
             hr;
             (fragments::RecommendBookButton::render(&lib.id))
-            (fragments::BookListRecommendations::render(&lib, dev::signed_user().id == lib.fk_author).await.render())
+            (fragments::BookListRecommendations::render(&lib, is_author).await.render())
           }
         }
 

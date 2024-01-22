@@ -2,8 +2,9 @@
 
 use crate::prelude::*;
 
-pub fn signed_user() -> Author {
+pub async fn signed_user() -> Author {
   Author::find_all()
+    .await
     .unwrap()
     .into_iter()
     .find(|u| u.handle == "SignedUser")

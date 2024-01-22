@@ -173,6 +173,18 @@ mod error {
     }
   }
 
+  impl From<surreal_simple_querybuilder::foreign_key::IntoKeyError> for AppError {
+    fn from(value: surreal_simple_querybuilder::foreign_key::IntoKeyError) -> Self {
+      use surreal_simple_querybuilder::foreign_key::IntoKeyError;
+
+      match value {
+        IntoKeyError::Custom(m) => Self::InternalServerError(m),
+        IntoKeyError::MissingId => Self::InternalServerError("IntoKeyError: missing id"),
+        IntoKeyError::TransformError => Self::InternalServerError("IntoKeyError: transform error")
+      }
+    }
+  }
+
   impl<MessageType> From<tokio::sync::mpsc::error::SendError<MessageType>> for AppError
   where
     MessageType: Debug

@@ -13,7 +13,7 @@ lv_server::endpoints!(RecommendBookButton {
 });
 
 impl api::get_recommend_book_button::Router {
-  pub async fn endpoint(path: Path<String>) -> HttpResponse {
+  pub async fn endpoint(path: Path<Id>) -> HttpResponse {
     let id = path.into_inner();
 
     lv_server::responses::html(RecommendBookButton::render(&id))
@@ -22,7 +22,7 @@ impl api::get_recommend_book_button::Router {
 
 impl api::get_recommend_book_form::Router {
   pub async fn endpoint(Need(library): Need<Library>) -> AppResponse {
-    let likes = LikedBook::find_by_author(&dev::signed_user().id).await?;
+    let likes = LikedBook::find_by_author(dev::signed_user().await.id_res()?).await?;
     let books = LikedBook::as_books(&likes).await?;
 
     let body = RecommendBookButton::render_form(&library, &books);
@@ -36,11 +36,9 @@ impl api::post_book_recommendation::Router {
   pub(self) async fn endpoint(
     Need(library): Need<Library>, Form(data): Form<RecommendBookForm>
   ) -> AppResponse {
-    let fragment = RecommendBookButton::render(&library.id);
+    let fragment = RecommendBookButton::render(library.id_res()?);
 
-    RecommendedBook::default()
-      .add(library.id, dev::signed_user().id, data.book_id)
-      .await?;
+    LibraryRecommendations::add_to_approve_recommendation().await;
 
     let res = lv_server::responses::html(fragment);
     let res = super::BookListRecommendationsEvents::Reload.trigger(res);
@@ -55,11 +53,11 @@ struct RecommendBookForm {
 }
 
 impl RecommendBookButton {
-  pub fn render(library_id: &String) -> Markup {
+  pub fn render(library_id: &Id) -> Markup {
     html!(
       button
         hx-target="this"
-        hx-get={(api::get_recommend_book_form::url(library_id))}
+        hx-get={(api::get_recommend_book_form::url(library_id.id()))}
         {"Recommend book"}
     )
   }
@@ -67,7 +65,7 @@ impl RecommendBookButton {
   fn render_form(lib: &Library, books: &Vec<Book>) -> Markup {
     html!(
       form
-        hx-post={(api::post_book_recommendation::url(&lib.id))}
+        hx-post={(api::post_book_recommendation::url(&lib.id()))}
         hx-target="this" {
 
         h2 {"Recommend a book in "(lib.title)}
@@ -80,7 +78,7 @@ impl RecommendBookButton {
           @else {
             select name="book_id" {
               @for book in books {
-                option value={(book.id)} {(book.title)}
+                option value={(book.id())} {(book.title)}
               }
             }
           }
@@ -89,7 +87,7 @@ impl RecommendBookButton {
         div {
           button {"Recommend book"}
           button
-            hx-get={(api::get_recommend_book_button::url(&lib.id))} {"Cancel"}
+            hx-get={(api::get_recommend_book_button::url(lib.id()))} {"Cancel"}
         }
       }
     )

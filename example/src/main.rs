@@ -1,4 +1,5 @@
 pub mod db;
+pub mod db_new;
 pub mod dev;
 pub mod extractors;
 pub mod exts;
@@ -6,6 +7,7 @@ pub mod fragments;
 pub mod models;
 pub mod page;
 pub mod result;
+pub mod types;
 pub mod views;
 
 pub mod prelude;
@@ -17,7 +19,8 @@ async fn main() -> result::AppResult<()> {
 
   let port = 3000;
 
-  db::connect("address", "username", "password", "namespace", "database").await?;
+  db::init().await;
+  db_new::connect("address", "username", "password", "namespace", "database").await?;
 
   println!("running server on http://localhost:{port}");
 

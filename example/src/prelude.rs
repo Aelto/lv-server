@@ -9,6 +9,7 @@ pub use serde::Deserialize;
 pub use serde::Serialize;
 
 pub use crate::db;
+pub use crate::db_new::DB;
 pub use crate::dev;
 pub use crate::extractors::*;
 pub use crate::fragments as shared_fragments;
@@ -21,9 +22,13 @@ pub use result::AppResult;
 pub use result::TemplateResponse;
 
 use crate::exts;
+pub use exts::foreign::*;
 pub use exts::option::*;
 pub use exts::result::*;
 pub use exts::vec::*;
+
+use crate::types;
+pub use types::*;
 
 pub use crate::page::page;
 
@@ -34,3 +39,8 @@ pub use lv_server::WithRender;
 pub use lv_server::WithRouter;
 pub use lv_server::WithScope;
 pub use lv_server::WithTrigger;
+
+pub use surreal_simple_querybuilder::prelude::*;
+pub use surreal_simple_querybuilder::wjson;
+pub use surrealdb::sql::thing;
+pub use surrealdb::sql::Thing;

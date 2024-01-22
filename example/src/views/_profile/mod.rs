@@ -12,23 +12,27 @@ lv_server::endpoints!(ViewProfile as view {
 });
 
 impl api::get_index::Router {
-  async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
-    lv_server::responses::html(page(ViewProfile::render(&author)))
+  async fn endpoint(Need(author): Need<Author>) -> AppResponse {
+    Ok(lv_server::responses::html(page(ViewProfile::render(
+      &author
+    )?)))
   }
 }
 
 impl ViewProfile {
-  pub fn render(author: &Author) -> Markup {
-    let libraries = author.libraries().unwrap();
+  pub fn render(author: &Author) -> TemplateResponse {
+    let libraries = author.libraries()?;
 
-    html!(
+    let view = html!(
       h2 {(author.handle)}
 
       section {
         h3 {"Libraries"}
         (fragments::AuthorLibraryList::render(&author, &libraries))
-        (fragments::AddLibraryButton::render_button(&author.id))
+        (fragments::AddLibraryButton::render_button(author.id_res()?))
       }
-    )
+    );
+
+    Ok(view)
   }
 }

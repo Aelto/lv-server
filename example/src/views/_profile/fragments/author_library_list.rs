@@ -26,14 +26,14 @@ impl AuthorLibraryList {
   pub fn render(author: &Author, libraries: &Vec<Library>) -> Markup {
     html!(
       ul class="libraries"
-        hx-get={(api::get_author_library_list::url(&author.id))}
+        hx-get={(api::get_author_library_list::url(&author.id()))}
         hx-trigger={(AuthorLibraryListEvents::Reload)}
         hx-swap="outerHTML"
         hx-target="this"
         {
           @for library in libraries {
             li {
-              a href={(crate::views::_profile_library::api::get_index::url(&library.id))} {(library.title)}
+              a href={(crate::views::_profile_library::api::get_index::url(&library.id()))} {(library.title)}
             }
           }
       }

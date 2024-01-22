@@ -8,7 +8,7 @@ lv_server::endpoints!(AuthorList {
 
 impl api::get_author_list::Router {
   async fn endpoint() -> HttpResponse {
-    let authors = Author::find_all().unwrap();
+    let authors = Author::find_all().await.unwrap();
 
     lv_server::responses::html(AuthorList::render(&authors))
   }
@@ -28,7 +28,7 @@ impl AuthorList {
       ul {
         @for author in authors {
           li {
-            a href={(crate::views::_profile::api::get_index::url(&author.id))} {(author.handle)}
+            a href={(crate::views::_profile::api::get_index::url(author.id()))} {(author.handle)}
           }
         }
       }

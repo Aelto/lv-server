@@ -33,16 +33,16 @@ impl api::get_edit_form::Router {
 }
 
 impl api::get_actions::Router {
-  pub async fn endpoint(Need(book): Need<Book>) -> HttpResponse {
-    let view = BookViewEditToggle::render_actions(&book).await;
+  pub async fn endpoint(Need(book): Need<Book>) -> AppResponse {
+    let view = BookViewEditToggle::render_actions(&book).await?;
 
-    lv_server::responses::html(view)
+    Ok(lv_server::responses::html(view))
   }
 }
 
 impl api::post_like::Router {
   pub async fn endpoint(Need(book): Need<Book>) -> TemplateResponse {
-    let user = dev::signed_user();
+    let user = dev::signed_user().await;
 
     let some_like = LikedBook::find_by_author_and_book(&user.id, &book.id)
       .await
@@ -50,7 +50,7 @@ impl api::post_like::Router {
 
     if some_like.is_none() {
       let _ = LikedBook::default()
-        .add(user.id, book.id.clone())
+        .create(user.id, book.id.clone())
         .internal_error_if_err("failed to create like record")?;
     }
 
@@ -60,7 +60,7 @@ impl api::post_like::Router {
 
 impl api::post_unlike::Router {
   pub async fn endpoint(Need(book): Need<Book>) -> TemplateResponse {
-    let user = dev::signed_user();
+    let user = dev::signed_user().await;
 
     let some_like = LikedBook::find_by_author_and_book(&user.id, &book.id)
       .await
@@ -80,15 +80,15 @@ impl api::post_unlike::Router {
 impl api::put_library_book::Router {
   pub async fn endpoint(
     Need(mut book): Need<Book>, Form(form): Form<UpdateBookForm>
-  ) -> HttpResponse {
+  ) -> AppResponse {
     book.content = form.content;
     book.title = form.title;
-    book.update().unwrap();
+    let book = book.update().await?;
 
     let view = BookViewEditToggle::render(&book);
     let html = lv_server::responses::html(view);
 
-    super::BookListEvents::Reload.trigger(html)
+    Ok(super::BookListEvents::Reload.trigger(html))
   }
 }
 
@@ -97,7 +97,7 @@ impl BookViewEditToggle {
     html!(
       div.document {
         div.actions
-          hx-get={(api::get_actions::url(&book.fk_library, &book.id))}
+          hx-get={(api::get_actions::url(book.library.fk().id(), book.id()))}
           hx-trigger="load" {}
 
         div.book.ptop {(book)}
@@ -105,45 +105,45 @@ impl BookViewEditToggle {
     )
   }
 
-  pub(self) async fn render_actions(book: &Book) -> Markup {
-    let user = dev::signed_user();
+  pub(self) async fn render_actions(book: &Book) -> TemplateResponse {
+    let user = dev::signed_user().await;
     let Ok(is_author) = book.is_author(&user.id).await else {
-      return html!(
+      return Ok(html!(
         div.actions {
           "failed to fetch personalised actions"
         }
-      );
+      ));
     };
 
-    let likes = LikedBook::does_like_book(&user.id, &book.id)
+    let likes = LikedBook::does_like_book(user.id_res()?, book.id_res()?)
       .await
       .unwrap_or_default();
 
-    html!(
+    Ok(html!(
       div.actions {
         @if is_author {
           button
-            hx-get={(api::get_edit_form::url(&book.fk_library, &book.id))}
+            hx-get={(api::get_edit_form::url(book.library.fk().id(), book.id()))}
             hx-swap="outerHTML"
             hx-target="closest .document"
             {"Edit book"}
         }
 
-        (Self::render_like_buttons(&book.id, likes))
+        (Self::render_like_buttons(book.id_res()?, likes))
       }
-    )
+    ))
   }
 
-  fn render_like_buttons(book: &str, like: bool) -> Markup {
+  fn render_like_buttons(book: &Id, like: bool) -> Markup {
     match like {
       true => html!(
         button
-          hx-post={(api::post_unlike::url(book))}
+          hx-post={(api::post_unlike::url(book.id()))}
           {"Unlike"}
       ),
       false => html!(
         button
-          hx-post={(api::post_like::url(book))}
+          hx-post={(api::post_like::url(book.id()))}
           {"Like"}
       )
     }
@@ -155,14 +155,14 @@ impl BookViewEditToggle {
         hx-swap="outerHTML"
         hx-target="this"
       {
-        form hx-put={(api::put_library_book::url(&book.fk_library, &book.id))} {
+        form hx-put={(api::put_library_book::url(book.library.fk().id(), book.id.id()))} {
           input name="title" value={(book.title)};
           textarea class="mtop" name="content" {(book.content)}
 
           div.mtop {
             button {"save"}
             button
-              hx-get={(api::get_index::url(&book.fk_library, &book.id))}
+              hx-get={(api::get_index::url(book.library.fk().id(), book.id()))}
               {"cancel"}
           }
         }

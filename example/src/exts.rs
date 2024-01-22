@@ -238,3 +238,20 @@ pub mod vec {
     }
   }
 }
+
+pub mod foreign {
+  use crate::prelude::*;
+
+  pub trait ForeignExt {
+    fn fk(&self) -> &Id;
+  }
+
+  impl<T> ForeignExt for ForeignKey<T, Id> {
+    fn fk(&self) -> &FlexibleId {
+      match self.key() {
+        Some(k) => k,
+        None => &FlexibleId::Empty
+      }
+    }
+  }
+}

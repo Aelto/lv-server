@@ -13,7 +13,7 @@ lv_server::endpoints!(AddBookButton {
 });
 
 impl api::get_library_add_book_button::Router {
-  pub async fn endpoint(path: Path<String>) -> HttpResponse {
+  pub async fn endpoint(path: Path<Id>) -> HttpResponse {
     let id = path.into_inner();
 
     lv_server::responses::html(AddBookButton::render(&id))
@@ -29,15 +29,15 @@ impl api::get_library_add_book_form::Router {
 impl api::post_library_book::Router {
   pub(self) async fn endpoint(
     Need(library): Need<Library>, Form(data): Form<AddBookForm>
-  ) -> HttpResponse {
+  ) -> AppResponse {
     let fragment = AddBookButton::render(&library.id);
     let book = Book {
       title: data.title,
       ..Default::default()
     };
-    book.add(library.id).unwrap();
+    book.create(&library.id).await?;
 
-    super::BookListEvents::Reload.trigger(lv_server::responses::html(fragment))
+    Ok(super::BookListEvents::Reload.trigger(lv_server::responses::html(fragment)))
   }
 }
 
@@ -47,12 +47,12 @@ struct AddBookForm {
 }
 
 impl AddBookButton {
-  pub fn render(library_id: &String) -> Markup {
+  pub fn render(library_id: &Id) -> Markup {
     html!(
       button
         hx-target="this"
         hx-swap="outerHTML"
-        hx-get={(api::get_library_add_book_form::url(library_id))}
+        hx-get={(api::get_library_add_book_form::url(library_id.id()))}
         {"Add book"}
     )
   }
@@ -60,7 +60,7 @@ impl AddBookButton {
   fn render_form(lib: &Library) -> Markup {
     html!(
       form
-        hx-post={(api::post_library_book::url(&lib.id))}
+        hx-post={(api::post_library_book::url(&lib.id()))}
         hx-target="this"
         hx-swap="outerHTML" {
 
@@ -74,7 +74,7 @@ impl AddBookButton {
         div.mtop {
           button {"Create book"}
           button
-            hx-get={(api::get_library_add_book_button::url(&lib.id))} {"Cancel"}
+            hx-get={(api::get_library_add_book_button::url(lib.id.id()))} {"Cancel"}
         }
       }
     )

@@ -32,11 +32,14 @@ impl RecentArticleList {
         {}
     )
   }
+
   fn render(books: &Vec<Book>) -> Markup {
     html!(
       ul {
         @for book in books {
-          li {a href={(crate::views::_profile_library::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}}
+          @let Some(fk_library) = book.library.key() else { continue; };
+
+          li {a href={(crate::views::_profile_library::api::get_with_book::url(fk_library.id(), &book.id()))} {(book.title)}}
         }
       }
     )

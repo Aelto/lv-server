@@ -12,29 +12,29 @@ lv_server::events!(BookListEvents {
 });
 
 impl api::get_library_book_list::Router {
-  pub async fn endpoint(Need(library): Need<Library>) -> HttpResponse {
-    let books = library.books().unwrap();
+  pub async fn endpoint(Need(library): Need<Library>) -> AppResponse {
+    let books = library.books().await?;
     let view = BookList::render(&library.id, &books);
 
-    lv_server::responses::html(view)
+    Ok(lv_server::responses::html(view))
   }
 }
 
 impl api::delete_book::Router {
-  pub async fn endpoint(Need((library, book)): Need<(Library, Book)>) -> HttpResponse {
-    if book.fk_library != library.id {
+  pub async fn endpoint(Need((library, book)): Need<(Library, Book)>) -> AppResponse {
+    if book.library.fk().id() != library.id() {
       let view = BookList::render_book(&library.id, &book);
 
-      return lv_server::responses::html(html!(
+      return Ok(lv_server::responses::html(html!(
         (view)
         div id="alerts" hx-swap-oob="true" {
           "library / book mismatch"
         }
-      ));
+      )));
     }
 
-    book.delete().unwrap();
-    lv_server::responses::empty_html()
+    book.delete().await?;
+    Ok(lv_server::responses::empty_html())
   }
 }
 
@@ -43,10 +43,10 @@ impl lv_server::Fragment<BookListEvents, api::Router> for BookList {
 }
 
 impl BookList {
-  pub fn render(library_id: &String, books: &Vec<Book>) -> Markup {
+  pub fn render(library_id: &Id, books: &Vec<Book>) -> Markup {
     html!(
       div.books
-        hx-get={(api::get_library_book_list::url(&library_id))}
+        hx-get={(api::get_library_book_list::url(library_id.id()))}
         hx-trigger={(BookListEvents::Reload)}
         hx-swap="outerHTML"
         hx-target="this" {
@@ -64,13 +64,13 @@ impl BookList {
     )
   }
 
-  pub fn render_book(library_id: &str, book: &Book) -> Markup {
+  pub fn render_book(library_id: &Id, book: &Book) -> Markup {
     html!(
       li.flex.justify-between {
-        a href={(super::super::api::get_with_book::url(library_id, &book.id))} {(book.title)}
+        a href={(super::super::api::get_with_book::url(library_id.id(), book.id()))} {(book.title)}
         button
           hx-confirm={"Delete book "(book.title)"?"}
-          hx-delete={(api::delete_book::url(library_id, &book.id))}
+          hx-delete={(api::delete_book::url(library_id.id(), book.id()))}
           {"delete"}
       }
     )
