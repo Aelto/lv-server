@@ -111,7 +111,10 @@ impl BookViewEditToggle {
           hx-trigger="load" {}
 
         @match content {
-          Some(c) => div.book.ptop {(c)},
+          Some(c) => div.book.ptop {
+            div.title {(book.title)}
+            (c)
+          },
           None => div.book.ptop {"This book is empty."}
         }
       }

@@ -78,7 +78,6 @@ impl maud::Render for BookContent {
     };
 
     html!(
-      div.title {(self.content)}
       div.content {(maud::PreEscaped(rendered_markdown))}
     )
   }
