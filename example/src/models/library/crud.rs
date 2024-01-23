@@ -8,6 +8,7 @@ impl Library {
       self.books.set_key(vec![]);
     }
 
+    self.author.set_key(author_id.to_owned());
     let lib = Model::m_create(self).await?;
 
     Author::add_library_record(author_id, &lib.id).await?;
