@@ -59,6 +59,27 @@ impl lv_server::PathExtractor for Author {
   }
 }
 
+pub struct AuthorWithLibraries(pub Author);
+#[lv_server::async_trait]
+impl lv_server::PathExtractor for AuthorWithLibraries {
+  type Params = Id;
+
+  const ID: &'static str = "PEAuthorWithLibraries";
+  fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
+    req
+      .match_info()
+      .get("author_id")
+      .map(|uuid| Id::new_thing(models::author::model.to_string(), uuid))
+  }
+
+  async fn from_params(params: Id) -> Option<Self> {
+    Author::find_by_id(&params, AuthorParams::FetchLibraries)
+      .await
+      .unwrap_or_default()
+      .map(|a| AuthorWithLibraries(a))
+  }
+}
+
 #[lv_server::async_trait]
 impl lv_server::PathExtractor for LibraryRecommendations {
   type Params = Id;

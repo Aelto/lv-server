@@ -12,7 +12,9 @@ lv_server::endpoints!(ViewProfile as view {
 });
 
 impl api::get_index::Router {
-  async fn endpoint(Need(author): Need<Author>) -> AppResponse {
+  async fn endpoint(Need(author): Need<AuthorWithLibraries>) -> AppResponse {
+    let author = author.0;
+
     Ok(lv_server::responses::html(page(ViewProfile::render(
       &author
     )?)))
@@ -21,7 +23,8 @@ impl api::get_index::Router {
 
 impl ViewProfile {
   pub fn render(author: &Author) -> TemplateResponse {
-    let libraries = author.libraries()?;
+    let empty = Vec::new();
+    let libraries = author.libraries.value().unwrap_or(&empty);
 
     let view = html!(
       h2 {(author.handle)}

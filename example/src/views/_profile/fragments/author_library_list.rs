@@ -11,10 +11,12 @@ lv_server::events!(AuthorLibraryListEvents {
 });
 
 impl api::get_author_library_list::Router {
-  async fn endpoint(Need(author): Need<Author>) -> HttpResponse {
-    let libraries = author.libraries().unwrap();
+  async fn endpoint(Need(author): Need<Author>) -> AppResponse {
+    let libraries = author.fetch_libraries().await?;
 
-    lv_server::responses::html(AuthorLibraryList::render(&author, &libraries))
+    Ok(lv_server::responses::html(AuthorLibraryList::render(
+      &author, &libraries
+    )))
   }
 }
 

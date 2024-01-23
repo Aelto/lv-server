@@ -17,7 +17,13 @@ impl Author {
     Self::m_find_one(&id, params).await
   }
 
-  pub fn libraries(&self) -> AppResult<Vec<Library>> {
-    todo!()
+  pub async fn fetch_libraries(&self) -> AppResult<Vec<Library>> {
+    let author = Self::find_by_id(&self.id, AuthorParams::FetchLibraries).await?;
+
+    Ok(
+      author
+        .and_then(|a| a.libraries.into_inner().into_value())
+        .unwrap_or_default()
+    )
   }
 }

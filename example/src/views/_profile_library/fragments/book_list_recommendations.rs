@@ -10,7 +10,7 @@ impl lv_server::Fragment<BookListRecommendationsEvents, api::Router> for BookLis
 
 lv_server::endpoints!(BookListRecommendations {
   get_index => GET "{library_id}"
-  put_approve_book => PUT "{library_id}/{recommended_book_id}"
+  put_approve_book => PUT "{library_id}/{book_id}"
 });
 
 lv_server::events!(BookListRecommendationsEvents {
@@ -27,15 +27,12 @@ impl api::get_index::Router {
 }
 
 impl api::put_approve_book::Router {
-  pub async fn endpoint(
-    Need((library, mut recommandation)): Need<(Library, LibraryRecommendations)>
-  ) -> AppResponse {
+  pub async fn endpoint(Need((library, book)): Need<(Library, Book)>) -> AppResponse {
     if !library.is_author(&dev::signed_user().await)? {
       return Ok(ErrorUnauthorized("insufficient_permissions").into());
     }
 
-    todo!("recommandation.approved = true;");
-    recommandation.update().await?;
+    LibraryRecommendations::approve_recommendation_by_library(&library.id, &book.id).await?;
 
     Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::no_content()))
   }
@@ -43,56 +40,64 @@ impl api::put_approve_book::Router {
 
 impl BookListRecommendations {
   pub async fn render(library: &Library, is_author: bool) -> TemplateResponse {
-    todo!()
-    // let (approved, unapproved) = library.recommended_books().await?;
+    let Some(recs) = LibraryRecommendations::find_by_library_id(
+      &library.id,
+      LibraryRecommendationsParams::FetchFull
+    )
+    .await?
+    else {
+      return Ok(html!());
+    };
 
-    // Ok(html!(
-    //   section class="recommended-books"
-    //     hx-trigger={(BookListRecommendationsEvents::Reload)}
-    //     hx-get={(api::get_index::url(&library.id()))}
-    //     hx-target="this" {
+    Ok(html!(
+      section class="recommended-books"
+        hx-trigger={(BookListRecommendationsEvents::Reload)}
+        hx-get={(api::get_index::url(&library.id()))}
+        hx-target="this" {
 
-    //     @if !approved.is_empty() {
-    //       (Self::render_approved_books(&approved))
-    //     }
+        @if let Some(approved) = recs.approved.value() {
+          @if !approved.is_empty() {
+            (Self::render_approved_books(&approved))
+          }
+        }
 
-    //     @if is_author && !unapproved.is_empty() {
-    //       (Self::render_unapproved_books(&unapproved))
-    //     }
-    //   }
-    // ))
+        @if let Some(unapproved) = recs.to_approve.value() {
+          @if is_author && !unapproved.is_empty() {
+            (Self::render_unapproved_books(&unapproved))
+          }
+        }
+      }
+    ))
   }
 
-  fn render_approved_books(recommendations: &Vec<(LibraryRecommendations, Book)>) -> Markup {
-    todo!()
-    // html!(
-    //   div {"Recommended books"}
-    //   ul {
-    //     @for (_, book) in recommendations {
-    //       li {
-    //         a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
-    //       }
-    //     }
-    //   }
-    // )
+  fn render_approved_books(recommendations: &Vec<Book>) -> Markup {
+    html!(
+      div {"Recommended books"}
+      ul {
+        @for book in recommendations {
+          li {
+            a href={(super::super::api::get_with_book::url(book.library.fk().id(), book.id()))} {(book.title)}
+          }
+        }
+      }
+    )
   }
 
-  fn render_unapproved_books(recommendations: &Vec<(LibraryRecommendations, Book)>) -> Markup {
-    todo!()
-    // html!(
-    //   div {"Recommended books (need approval)"}
-    //     ul {
-    //       @for (rec, book) in recommendations {
-    //         li {
-    //           a href={(super::super::api::get_with_book::url(&book.fk_library, &book.id))} {(book.title)}
-    //           button
-    //             hx-confirm={"Approve recommendation for "(book.title)"?"}
-    //             hx-put={(api::put_approve_book::url(&book.fk_library, &rec.id))}
-    //             hx-target="closest li"
-    //             {"approve"}
-    //         }
-    //       }
-    //     }
-    // )
+  fn render_unapproved_books(recommendations: &Vec<Book>) -> Markup {
+    html!(
+      div {"Recommended books (need approval)"}
+        ul {
+          @for book in recommendations {
+            li {
+              a href={(super::super::api::get_with_book::url(book.library.fk().id(), book.id()))} {(book.title)}
+              button
+                hx-confirm={"Approve recommendation for "(book.title)"?"}
+                hx-put={(api::put_approve_book::url(book.library.fk().id(), book.id()))}
+                hx-target="closest li"
+                {"approve"}
+            }
+          }
+        }
+    )
   }
 }
