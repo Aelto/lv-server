@@ -12,14 +12,16 @@ pub struct LibraryRecommendations {
 
   pub library: ForeignKey<Library, Id>,
   pub approved: ForeignKey<Vec<Book>, Vec<Id>>,
-  pub to_approve: ForeignKey<Vec<Book>, Vec<Id>>
+  pub to_approve: ForeignKey<Vec<Book>, Vec<Id>>,
+  pub denied: ForeignKey<Vec<Book>, Vec<Id>>
 }
 
 surreal_simple_querybuilder::model!(LibraryRecommendations {
   id,
   pub library,
   pub approved,
-  pub to_approve
+  pub to_approve,
+  pub denied
 });
 pub use schema::model;
 crate::with_model!(LibraryRecommendations);
@@ -31,6 +33,10 @@ impl IntoKey<Id> for LibraryRecommendations {
 }
 
 impl LibraryRecommendations {
+  pub fn custom_id(library: &Id) -> Id {
+    Id::new_thing(model.to_string(), library.id())
+  }
+
   pub async fn add_to_approve_recommendation() {
     todo!()
   }

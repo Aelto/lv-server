@@ -56,7 +56,9 @@ impl ViewProfileLibrary {
         }
 
         @if let Some(book) =  book {
-          (fragments::BookViewEditToggle::render(&book))
+          @let content = book.fetch_content().await?;
+
+          (fragments::BookViewEditToggle::render(&book, content.as_ref()))
         }
       }
     ))

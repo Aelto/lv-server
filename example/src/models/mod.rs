@@ -6,6 +6,9 @@ pub mod book;
 pub use book::Book;
 pub use book::BookParams;
 
+pub mod book_content;
+pub use book_content::BookContent;
+
 pub mod liked_book;
 pub use liked_book::LikedBook;
 
@@ -27,7 +30,7 @@ use std::fmt::Debug;
 #[lv_server::async_trait]
 pub trait Model
 where
-  Self: Sized + Serialize + DeserializeOwned + Send + Sync
+  Self: Sized + Serialize + DeserializeOwned + Send + Sync + Debug
 {
   fn table() -> &'static str;
   fn m_id(&self) -> Option<&Id>;
@@ -51,6 +54,8 @@ where
   async fn m_create(self) -> AppResult<Self> {
     let mut item = DB.create(Self::table()).content(self).await?;
 
+    dbg!(&item);
+    println!("m_create()");
     unwrap_or_api_error(item.pop())
   }
 
@@ -68,6 +73,7 @@ where
   async fn m_delete_one(id: &Id) -> AppResult<Self> {
     let item = DB.delete(id.to_thing()?).await?;
 
+    println!("m_delete_one({id})");
     unwrap_or_api_error(item)
   }
 
@@ -77,6 +83,7 @@ where
     if let Some(id) = self.m_id() {
       let item = DB.update(id.to_thing()?).content(self).await?;
 
+      println!("m_update({item:?})");
       unwrap_or_api_error(item)
     } else {
       Ok(self)
@@ -88,6 +95,7 @@ where
   async fn m_merge_one(id: &Id, merge: impl Serialize + Send) -> AppResult<Self> {
     let item = DB.update(id.to_thing()?).merge(merge).await?;
 
+    println!("m_merge_one({id:?})");
     unwrap_or_api_error(item)
   }
 
@@ -106,14 +114,12 @@ where
   where
     Self: Debug
   {
-    let _item: Option<serde_json::Value> = DB
+    let item = DB
       .update(id.to_thing()?)
       .patch(PatchOp::add(field, value))
       .await?;
 
-    // todo: temporary until surrealdb fixes Update to no longer return a diff
-    let item = Self::m_find(Where(("id", id))).await?;
-
+    println!("m_add_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 
@@ -145,6 +151,7 @@ where
     // todo: temporary until surrealdb fixes Update to no longer return a diff
     // let item = Self::m_find(Where(("id", id))).await?;
 
+    println!("m_replace_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 
@@ -169,6 +176,7 @@ where
       .patch(PatchOp::remove(&format!("{field}/{index_or_subfield}")))
       .await?;
 
+    println!("m_remove_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 

@@ -5,8 +5,6 @@ pub use id_representation::IdRepresentation;
 mod flexible_id {
   use serde::Deserialize;
   use serde::Serialize;
-  use surreal_simple_querybuilder::prelude::IntoKey;
-  use surreal_simple_querybuilder::prelude::IntoKeyError;
   use surrealdb::sql::thing;
   use surrealdb::sql::Thing;
 

@@ -30,6 +30,17 @@ impl LikedBook {
   pub async fn does_like_book(author: &Id, book: &Id) -> AppResult<bool> {
     Ok(Self::find_by_author_and_book(author, book).await?.is_some())
   }
+
+  pub async fn get_liked_books(author: &Id) -> AppResult<Vec<Book>> {
+    let likes = Self::find_by_author(author, LikedBookParams::FetchBook).await?;
+
+    Ok(
+      likes
+        .into_iter()
+        .filter_map(|l| l.book.into_inner().into_value())
+        .collect()
+    )
+  }
 }
 
 impl LikedBook {

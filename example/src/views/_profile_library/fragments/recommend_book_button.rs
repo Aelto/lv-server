@@ -22,9 +22,7 @@ impl api::get_recommend_book_button::Router {
 
 impl api::get_recommend_book_form::Router {
   pub async fn endpoint(Need(library): Need<Library>) -> AppResponse {
-    let likes = LikedBook::find_by_author(dev::signed_user().await.id_res()?).await?;
-    let books = LikedBook::as_books(&likes).await?;
-
+    let books = LikedBook::get_liked_books(&dev::signed_user().await.id).await?;
     let body = RecommendBookButton::render_form(&library, &books);
     let res = lv_server::responses::html(body);
 
@@ -36,10 +34,19 @@ impl api::post_book_recommendation::Router {
   pub(self) async fn endpoint(
     Need(library): Need<Library>, Form(data): Form<RecommendBookForm>
   ) -> AppResponse {
-    let fragment = RecommendBookButton::render(library.id_res()?);
+    let book_id = Id::new_thing(crate::models::book::model.to_string(), data.book_id);
+    let book = Book::find_by_id(&book_id, BookParams::None).await?;
 
-    LibraryRecommendations::add_to_approve_recommendation().await;
+    if let Some(book) = book {
+      let mut recommandations =
+        LibraryRecommendations::find_or_create(&library.id, LibraryRecommendationsParams::None)
+          .await?;
 
+      recommandations.to_approve.push(book);
+      recommandations.update().await?;
+    }
+
+    let fragment = RecommendBookButton::render(&library.id);
     let res = lv_server::responses::html(fragment);
     let res = super::BookListRecommendationsEvents::Reload.trigger(res);
 

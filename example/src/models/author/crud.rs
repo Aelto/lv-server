@@ -1,7 +1,11 @@
 use crate::prelude::*;
 
 impl Author {
-  pub async fn create(self) -> AppResult<Self> {
+  pub async fn create(mut self) -> AppResult<Self> {
+    if self.libraries.is_unloaded() {
+      self.libraries.set_key(vec![]);
+    }
+
     Model::m_create(self).await
   }
 

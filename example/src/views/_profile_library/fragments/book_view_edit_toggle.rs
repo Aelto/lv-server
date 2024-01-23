@@ -21,14 +21,23 @@ lv_server::endpoints!(BookViewEditToggle {
 });
 
 impl api::get_index::Router {
-  pub async fn endpoint(Need(book): Need<Book>) -> HttpResponse {
-    lv_server::responses::html(BookViewEditToggle::render(&book))
+  pub async fn endpoint(Need(book): Need<Book>) -> AppResponse {
+    let content = book.fetch_content().await?;
+
+    Ok(lv_server::responses::html(BookViewEditToggle::render(
+      &book,
+      content.as_ref()
+    )))
   }
 }
 
 impl api::get_edit_form::Router {
-  pub async fn endpoint(Need(book): Need<Book>) -> HttpResponse {
-    lv_server::responses::html(BookViewEditToggle::render_edit_form(&book))
+  pub async fn endpoint(Need(book): Need<Book>) -> AppResponse {
+    let content = book.fetch_content().await?;
+
+    Ok(lv_server::responses::html(
+      BookViewEditToggle::render_edit_form(&book, content.as_ref())
+    ))
   }
 }
 
@@ -51,6 +60,7 @@ impl api::post_like::Router {
     if some_like.is_none() {
       let _ = LikedBook::default()
         .create(user.id, book.id.clone())
+        .await
         .internal_error_if_err("failed to create like record")?;
     }
 
@@ -81,11 +91,11 @@ impl api::put_library_book::Router {
   pub async fn endpoint(
     Need(mut book): Need<Book>, Form(form): Form<UpdateBookForm>
   ) -> AppResponse {
-    book.content = form.content;
     book.title = form.title;
     let book = book.update().await?;
+    let content = BookContent::set_by_book_id(&book.id, form.content).await?;
 
-    let view = BookViewEditToggle::render(&book);
+    let view = BookViewEditToggle::render(&book, Some(&content));
     let html = lv_server::responses::html(view);
 
     Ok(super::BookListEvents::Reload.trigger(html))
@@ -93,14 +103,17 @@ impl api::put_library_book::Router {
 }
 
 impl BookViewEditToggle {
-  pub fn render(book: &Book) -> Markup {
+  pub fn render(book: &Book, content: Option<&BookContent>) -> Markup {
     html!(
       div.document {
         div.actions
           hx-get={(api::get_actions::url(book.library.fk().id(), book.id()))}
           hx-trigger="load" {}
 
-        div.book.ptop {(book)}
+        @match content {
+          Some(c) => div.book.ptop {(c)},
+          None => div.book.ptop {"This book is empty."}
+        }
       }
     )
   }
@@ -149,7 +162,9 @@ impl BookViewEditToggle {
     }
   }
 
-  pub fn render_edit_form(book: &Book) -> Markup {
+  pub fn render_edit_form(book: &Book, content: Option<&BookContent>) -> Markup {
+    let default_content = content.map(|c| c.content.as_str()).unwrap_or("");
+
     html!(
       div.document
         hx-swap="outerHTML"
@@ -157,7 +172,7 @@ impl BookViewEditToggle {
       {
         form hx-put={(api::put_library_book::url(book.library.fk().id(), book.id.id()))} {
           input name="title" value={(book.title)};
-          textarea class="mtop" name="content" {(book.content)}
+          textarea class="mtop" name="content" {(default_content)}
 
           div.mtop {
             button {"save"}

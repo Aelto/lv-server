@@ -1121,6 +1121,7 @@ dependencies = [
  "lv-server",
  "maud",
  "nanoid",
+ "once_cell",
  "pulldown-cmark",
  "serde",
  "serde_json",

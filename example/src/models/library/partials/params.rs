@@ -7,7 +7,8 @@ use surreal_simple_querybuilder::types::Fetch;
 pub enum LibraryParams {
   None,
   FetchAuthor,
-  FetchBooks
+  FetchBooks,
+  FetchFull
 }
 
 impl<'a> QueryBuilderInjecter<'a> for LibraryParams {
@@ -18,8 +19,9 @@ impl<'a> QueryBuilderInjecter<'a> for LibraryParams {
 
     match self {
       Self::None => ().inject(querybuilder),
-      Self::FetchBooks => Fetch([&*model.author]).inject(querybuilder),
-      Self::FetchBooks => Fetch([&*model.books]).inject(querybuilder)
+      Self::FetchAuthor => Fetch([&*model.author]).inject(querybuilder),
+      Self::FetchBooks => Fetch([&*model.books]).inject(querybuilder),
+      Self::FetchFull => Fetch([&*model.author, &*model.books]).inject(querybuilder)
     }
   }
 }

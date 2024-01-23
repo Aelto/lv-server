@@ -19,8 +19,8 @@ async fn main() -> result::AppResult<()> {
 
   let port = 3000;
 
-  db::init().await;
   db_new::connect("address", "username", "password", "namespace", "database").await?;
+  db::init().await;
 
   println!("running server on http://localhost:{port}");
 

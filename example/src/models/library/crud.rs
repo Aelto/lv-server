@@ -3,7 +3,11 @@ use crate::prelude::*;
 use super::model;
 
 impl Library {
-  pub async fn create(self, author_id: &Id) -> AppResult<Self> {
+  pub async fn create(mut self, author_id: &Id) -> AppResult<Self> {
+    if self.books.is_unloaded() {
+      self.books.set_key(vec![]);
+    }
+
     let lib = Model::m_create(self).await?;
 
     Author::add_library_record(author_id, &lib.id).await?;

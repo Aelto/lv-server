@@ -3,8 +3,10 @@ use crate::prelude::*;
 use super::{model, LikedBookParams};
 
 impl LikedBook {
-  pub async fn create(mut self) -> AppResult<Self> {
-    self.id = Self::custom_id(self.author.fk(), self.book.fk());
+  pub async fn create(mut self, author: Id, book: Id) -> AppResult<Self> {
+    self.id = Self::custom_id(&author, &book);
+    self.author = ForeignKey::new_key(author);
+    self.book = ForeignKey::new_key(book);
 
     Model::m_create(self).await
   }

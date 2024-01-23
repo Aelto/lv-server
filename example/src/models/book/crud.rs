@@ -1,7 +1,9 @@
 use crate::prelude::*;
 
 impl Book {
-  pub async fn create(self, library_id: &Id) -> AppResult<Self> {
+  pub async fn create(mut self, library_id: &Id) -> AppResult<Self> {
+    self.library.set_key(library_id.to_owned());
+
     let book = Model::m_create(self).await?;
     Library::add_book_record(library_id, &book.id).await?;
 

@@ -22,13 +22,13 @@ pub async fn init() {
     ..Default::default()
   };
   author.create().await.unwrap();
-  let author = crate::dev::signed_user();
+  let author = crate::dev::signed_user().await;
 
   let lib = crate::models::Library {
     title: "Nook".to_owned(),
     ..Default::default()
   };
-  lib.create().await.unwrap();
+  lib.create(&author.id).await.unwrap();
 
   for lib in crate::models::Library::find_all().await.unwrap() {
     let book = crate::models::Book {
@@ -36,7 +36,7 @@ pub async fn init() {
       ..Default::default()
     };
 
-    book.create().await.unwrap();
+    book.create(&lib.id).await.unwrap();
   }
 }
 
