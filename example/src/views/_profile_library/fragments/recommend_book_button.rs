@@ -13,10 +13,8 @@ lv_server::endpoints!(RecommendBookButton {
 });
 
 impl api::get_recommend_book_button::Router {
-  pub async fn endpoint(path: Path<Id>) -> HttpResponse {
-    let id = path.into_inner();
-
-    lv_server::responses::html(RecommendBookButton::render(&id))
+  pub async fn endpoint(Need(lib): Need<Library>) -> HttpResponse {
+    lv_server::responses::html(RecommendBookButton::render(&lib.id))
   }
 }
 
@@ -92,7 +90,10 @@ impl RecommendBookButton {
         }
 
         div {
-          button {"Recommend book"}
+          @if !books.is_empty() {
+            button {"Recommend book"}
+          }
+
           button
             hx-get={(api::get_recommend_book_button::url(lib.id()))} {"Cancel"}
         }

@@ -180,7 +180,8 @@ where
     usize: QueryResult<R>
   {
     let (query, params) = surreal_simple_querybuilder::queries::select("*", Self::table(), params)?;
-    let query = DB.query(query).bind(params);
+    let query = DB.query(query);
+    let query = hack_bind_params(query, params);
     let items = query.await?.take(0)?;
 
     Ok(items)
@@ -194,11 +195,58 @@ where
     usize: QueryResult<R>
   {
     let (query, params) = surreal_simple_querybuilder::queries::select("*", "$what", params)?;
-    let query = DB.query(query).bind(("what", id.to_thing()?)).bind(params);
+    let query = DB.query(query).bind(("what", id.to_thing()?));
+    let query = hack_bind_params(query, params);
     let items = query.await?.take(0)?;
 
     Ok(items)
   }
+}
+
+/// A hack function in case surrealdb acts funky and doesn't properly binds
+/// ID params.
+#[allow(unused)]
+fn hack_bind_params<N: surrealdb::Connection>(
+  mut query: surrealdb::method::Query<N>,
+  params: std::collections::HashMap<String, serde_json::Value>
+) -> surrealdb::method::Query<N> {
+  for (key, value) in params {
+    match value {
+      serde_json::Value::Object(mut obj) => {
+        if obj.contains_key("id") && obj.contains_key("tb") {
+          use serde_json::Value;
+          use surrealdb::sql::Id;
+
+          let Some(Value::String(tb)) = obj.remove("tb") else {
+            continue;
+          };
+
+          let Some(Value::Object(mut id)) = obj.remove("id") else {
+            continue;
+          };
+
+          let Some(Value::String(id)) = id.remove("String") else {
+            continue;
+          };
+
+          query = query.bind((
+            key,
+            surrealdb::sql::Thing {
+              id: Id::from(id),
+              tb: tb
+            }
+          ));
+        } else {
+          query = query.bind((key, obj));
+        }
+      }
+      _ => {
+        query = query.bind((key, value));
+      }
+    };
+  }
+
+  query
 }
 
 pub(crate) fn unwrap_or_api_error<Opt>(some: Option<Opt>) -> AppResult<Opt> {
