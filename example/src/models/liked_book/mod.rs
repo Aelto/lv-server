@@ -5,8 +5,6 @@ mod crud;
 pub mod partials;
 pub use partials::LikedBookParams;
 
-static TABLE: &'static str = "liked-books";
-
 /// A record optimized for fast O(1) querying when both ends of the link are
 /// known. In this case ends are the author and the liked book.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

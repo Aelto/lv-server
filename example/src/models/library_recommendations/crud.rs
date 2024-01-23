@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::{model, LibraryRecommendationsParams};
+use super::LibraryRecommendationsParams;
 
 impl LibraryRecommendations {
   pub async fn create(mut self, library: Id) -> AppResult<Self> {
