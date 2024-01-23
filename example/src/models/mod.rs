@@ -30,7 +30,7 @@ use std::fmt::Debug;
 #[lv_server::async_trait]
 pub trait Model
 where
-  Self: Sized + Serialize + DeserializeOwned + Send + Sync + Debug
+  Self: Sized + Serialize + DeserializeOwned + Send + Sync
 {
   fn table() -> &'static str;
   fn m_id(&self) -> Option<&Id>;
@@ -54,8 +54,6 @@ where
   async fn m_create(self) -> AppResult<Self> {
     let mut item = DB.create(Self::table()).content(self).await?;
 
-    dbg!(&item);
-    println!("m_create()");
     unwrap_or_api_error(item.pop())
   }
 
@@ -73,7 +71,6 @@ where
   async fn m_delete_one(id: &Id) -> AppResult<Self> {
     let item = DB.delete(id.to_thing()?).await?;
 
-    println!("m_delete_one({id})");
     unwrap_or_api_error(item)
   }
 
@@ -83,7 +80,6 @@ where
     if let Some(id) = self.m_id() {
       let item = DB.update(id.to_thing()?).content(self).await?;
 
-      println!("m_update({item:?})");
       unwrap_or_api_error(item)
     } else {
       Ok(self)
@@ -95,7 +91,6 @@ where
   async fn m_merge_one(id: &Id, merge: impl Serialize + Send) -> AppResult<Self> {
     let item = DB.update(id.to_thing()?).merge(merge).await?;
 
-    println!("m_merge_one({id:?})");
     unwrap_or_api_error(item)
   }
 
@@ -119,7 +114,6 @@ where
       .patch(PatchOp::add(field, value))
       .await?;
 
-    println!("m_add_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 
@@ -151,7 +145,6 @@ where
     // todo: temporary until surrealdb fixes Update to no longer return a diff
     // let item = Self::m_find(Where(("id", id))).await?;
 
-    println!("m_replace_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 
@@ -176,7 +169,6 @@ where
       .patch(PatchOp::remove(&format!("{field}/{index_or_subfield}")))
       .await?;
 
-    println!("m_remove_one({id:?}, {field})");
     unwrap_or_api_error(item)
   }
 
@@ -202,7 +194,7 @@ where
     usize: QueryResult<R>
   {
     let (query, params) = surreal_simple_querybuilder::queries::select("*", "$what", params)?;
-    let query = DB.query(query).bind(params);
+    let query = DB.query(query).bind(("what", id.to_thing()?)).bind(params);
     let items = query.await?.take(0)?;
 
     Ok(items)

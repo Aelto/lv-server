@@ -8,7 +8,10 @@ impl lv_server::PathExtractor for Library {
 
   const ID: &'static str = "PELibrary";
   fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
-    req.match_info().get("library_id").map(Id::from)
+    req
+      .match_info()
+      .get("library_id")
+      .map(|uuid| Id::new_thing(models::library::model.to_string(), uuid))
   }
 
   async fn from_params(params: Id) -> Option<Self> {
@@ -24,7 +27,10 @@ impl lv_server::PathExtractor for Book {
 
   const ID: &'static str = "PEBook";
   fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
-    req.match_info().get("book_id").map(Id::from)
+    req
+      .match_info()
+      .get("book_id")
+      .map(|uuid| Id::new_thing(models::book::model.to_string(), uuid))
   }
 
   async fn from_params(params: Id) -> Option<Self> {
@@ -40,7 +46,10 @@ impl lv_server::PathExtractor for Author {
 
   const ID: &'static str = "PEAuthor";
   fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
-    req.match_info().get("author_id").map(Id::from)
+    req
+      .match_info()
+      .get("author_id")
+      .map(|uuid| Id::new_thing(models::author::model.to_string(), uuid))
   }
 
   async fn from_params(params: Id) -> Option<Self> {
@@ -59,7 +68,7 @@ impl lv_server::PathExtractor for LibraryRecommendations {
     req
       .match_info()
       .get("library_recommendations_id")
-      .map(Id::from)
+      .map(|uuid| Id::new_thing(models::library_recommendations::model.to_string(), uuid))
   }
 
   async fn from_params(params: Id) -> Option<Self> {

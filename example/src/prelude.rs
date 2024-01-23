@@ -13,6 +13,7 @@ pub use crate::db_new::DB;
 pub use crate::dev;
 pub use crate::extractors::*;
 pub use crate::fragments as shared_fragments;
+pub use crate::models;
 pub use crate::models::*;
 
 use crate::result;
