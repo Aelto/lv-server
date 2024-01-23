@@ -32,11 +32,13 @@ pub(super) struct FormPostLibrary {
 impl api::post_library::Router {
   pub async fn endpoint(Need(author): Need<Author>, form: Form<FormPostLibrary>) -> AppResponse {
     let form = form.into_inner();
-    let _ = Library {
+
+    Library {
       title: form.title,
       ..Default::default()
     }
-    .create(&author.id);
+    .create(&author.id)
+    .await?;
 
     let view = AddLibraryButton::render_button(&author.id);
     let res = lv_server::responses::html(view);
@@ -70,7 +72,7 @@ impl AddLibraryButton {
         label for="title" {"Title"}
         input id="title" name="title" value="Lorem";
 
-        input type="submit";
+        button {"Create"}
       }
     )
   }

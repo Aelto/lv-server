@@ -42,7 +42,7 @@ impl api::post_book_recommendation::Router {
         LibraryRecommendations::find_or_create(&library.id, LibraryRecommendationsParams::None)
           .await?;
 
-      recommandations.to_approve.push(book);
+      recommandations.to_approve.push(book)?;
       recommandations.update().await?;
     }
 
