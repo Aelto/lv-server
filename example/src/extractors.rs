@@ -21,6 +21,26 @@ impl lv_server::PathExtractor for Library {
   }
 }
 
+pub struct LibraryWithBooks(pub Library);
+#[lv_server::async_trait]
+impl lv_server::PathExtractor for LibraryWithBooks {
+  type Params = Id;
+
+  const ID: &'static str = "PELibraryWithBooks";
+  fn params(
+    req: &actix_web::HttpRequest, payload: &mut actix_web::dev::Payload
+  ) -> Option<Self::Params> {
+    <Library as lv_server::PathExtractor>::params(req, payload)
+  }
+
+  async fn from_params(params: Id) -> Option<Self> {
+    Library::find_by_id(&params, LibraryParams::FetchBooks)
+      .await
+      .unwrap_or_default()
+      .map(|a| LibraryWithBooks(a))
+  }
+}
+
 #[lv_server::async_trait]
 impl lv_server::PathExtractor for Book {
   type Params = Id;
