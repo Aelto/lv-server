@@ -36,7 +36,8 @@ impl api::post_book_recommendation::Router {
     let book = Book::find_by_id(&book_id, BookParams::None).await?;
 
     if let Some(book) = book {
-      LibraryRecommendations::add_pending_recommendation(&library, book).await?;
+      BookRecommendation::set_recommendation(&library, &book, LibraryRecommendationStatus::Pending)
+        .await?;
     }
 
     let fragment = RecommendBookButton::render(&library.id);

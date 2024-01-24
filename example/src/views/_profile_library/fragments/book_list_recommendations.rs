@@ -33,7 +33,8 @@ impl api::put_approve_book::Router {
       return Ok(ErrorUnauthorized("insufficient_permissions").into());
     }
 
-    LibraryRecommendations::add_approved_recommendation(&library, book).await?;
+    BookRecommendation::set_recommendation(&library, &book, LibraryRecommendationStatus::Approved)
+      .await?;
 
     Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::no_content()))
   }
@@ -45,7 +46,8 @@ impl api::put_deny_book::Router {
       return Ok(ErrorUnauthorized("insufficient_permissions").into());
     }
 
-    LibraryRecommendations::add_denied_recommendation(&library, book).await?;
+    BookRecommendation::set_recommendation(&library, &book, LibraryRecommendationStatus::Denied)
+      .await?;
 
     Ok(BookListRecommendationsEvents::Reload.trigger(lv_server::responses::no_content()))
   }
@@ -53,12 +55,10 @@ impl api::put_deny_book::Router {
 
 impl BookListRecommendations {
   pub async fn render(library: &Library, is_author: bool) -> TemplateResponse {
-    let recs = LibraryRecommendations::find_by_library_id(
-      &library.id,
-      LibraryRecommendationsParams::FetchFull
-    )
-    .await?
-    .unwrap_or_default();
+    let recs = BookRecommendation::find_by_library(library).await?;
+    let (pending, approved, denied) = BookRecommendation::split_by_status(&recs);
+    let (mut pending, mut approved, mut denied) =
+      (pending.peekable(), approved.peekable(), denied.peekable());
 
     Ok(html!(
       section class="recommended-books"
@@ -67,36 +67,28 @@ impl BookListRecommendations {
         hx-target="this" {
 
         @if is_author {
-          @if let Some(approved) = recs.approved.value() {
-            @if !approved.is_empty() {
-              (Self::render_approved_books_for_author(&approved))
-            }
+          @if approved.peek().is_some() {
+            (Self::render_approved_books_for_author(approved))
           }
 
-          @if let Some(unapproved) = recs.pending.value() {
-            @if !unapproved.is_empty() {
-              (Self::render_pending_books(&unapproved))
-            }
+          @if pending.peek().is_some() {
+            (Self::render_pending_books(pending))
           }
 
-          @if let Some(denied) = recs.denied.value() {
-            @if !denied.is_empty() {
-              (Self::render_denied_books(&denied))
-            }
+          @if denied.peek().is_some() {
+            (Self::render_denied_books(denied))
           }
         }
         @else {
-          @if let Some(approved) = recs.approved.value() {
-            @if !approved.is_empty() {
-              (Self::render_approved_books(&approved))
-            }
+          @if approved.peek().is_some() {
+            (Self::render_approved_books(approved))
           }
         }
       }
     ))
   }
 
-  fn render_approved_books(recommendations: &Vec<Book>) -> Markup {
+  fn render_approved_books<'a>(recommendations: impl Iterator<Item = &'a Book>) -> Markup {
     html!(
       div {"Recommended books"}
       ul {
@@ -109,7 +101,9 @@ impl BookListRecommendations {
     )
   }
 
-  fn render_approved_books_for_author(recommendations: &Vec<Book>) -> Markup {
+  fn render_approved_books_for_author<'a>(
+    recommendations: impl Iterator<Item = &'a Book>
+  ) -> Markup {
     html!(
       div {"Recommended books"}
       ul {
@@ -124,7 +118,7 @@ impl BookListRecommendations {
     )
   }
 
-  fn render_pending_books(recommendations: &Vec<Book>) -> Markup {
+  fn render_pending_books<'a>(recommendations: impl Iterator<Item = &'a Book>) -> Markup {
     html!(
       div {"Recommended books (need approval)"}
       ul {
@@ -140,7 +134,7 @@ impl BookListRecommendations {
     )
   }
 
-  fn render_denied_books(recommendations: &Vec<Book>) -> Markup {
+  fn render_denied_books<'a>(recommendations: impl Iterator<Item = &'a Book>) -> Markup {
     html!(
       div {"Denied books"}
       ul {

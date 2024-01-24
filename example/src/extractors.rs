@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-use self::library_recommendations::LibraryRecommendationsParams;
-
 #[lv_server::async_trait]
 impl lv_server::PathExtractor for Library {
   type Params = Id;
@@ -97,24 +95,5 @@ impl lv_server::PathExtractor for AuthorWithLibraries {
       .await
       .unwrap_or_default()
       .map(|a| AuthorWithLibraries(a))
-  }
-}
-
-#[lv_server::async_trait]
-impl lv_server::PathExtractor for LibraryRecommendations {
-  type Params = Id;
-
-  const ID: &'static str = "PELibraryRecommendations";
-  fn params(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Option<Self::Params> {
-    req
-      .match_info()
-      .get("library_recommendations_id")
-      .map(|uuid| Id::new_thing(models::library_recommendations::model.to_string(), uuid))
-  }
-
-  async fn from_params(params: Id) -> Option<Self> {
-    Self::find_by_id(&params, LibraryRecommendationsParams::None)
-      .await
-      .unwrap_or_default()
   }
 }

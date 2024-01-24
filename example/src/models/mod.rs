@@ -16,9 +16,13 @@ pub mod library;
 pub use library::Library;
 pub use library::LibraryParams;
 
-pub mod library_recommendations;
-pub use library_recommendations::LibraryRecommendations;
-pub use library_recommendations::LibraryRecommendationsParams;
+// pub mod library_recommendations;
+// pub use library_recommendations::LibraryRecommendations;
+// pub use library_recommendations::LibraryRecommendationsParams;
+
+pub mod library_recommendation;
+pub use library_recommendation::BookRecommendation;
+pub use library_recommendation::LibraryRecommendationStatus;
 
 use serde::de::DeserializeOwned;
 use surrealdb::opt::PatchOp;

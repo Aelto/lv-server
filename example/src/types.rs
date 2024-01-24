@@ -1,6 +1,8 @@
 pub use flexible_id::FlexibleId;
 pub use flexible_id::FlexibleId as Id;
 pub use id_representation::IdRepresentation;
+pub use relation::Relation;
+pub use relation::RelationOptionExt;
 
 mod flexible_id {
   use serde::Deserialize;
@@ -206,6 +208,51 @@ mod id_representation {
         FlexibleId::String(s) => Self(s),
         FlexibleId::Empty => Self::default()
       }
+    }
+  }
+}
+
+mod relation {
+  use serde::Deserialize;
+
+  /// A custom type used to extract relations out of query results. To use it you
+  /// must alias the relation with `as relation` and take the result wrapped by
+  /// this type.
+  #[derive(Debug, Deserialize)]
+  pub struct Relation<T> {
+    /// when doing queries with edges there is no way to select 1 end of the edge.
+    /// It's always a vector of results hence the `Vec<T>`, we then offer methods
+    /// to get the first element or multiple elements depending on the need
+    relation: Vec<T>
+  }
+
+  impl<T> Relation<T> {
+    pub fn first(mut self) -> Option<T> {
+      self.relation.pop()
+    }
+
+    /// Returns all the elements from the queried relation/edge
+    pub fn all(self) -> Vec<T> {
+      self.relation
+    }
+  }
+
+  pub trait RelationOptionExt<T> {
+    /// If the Option is Some then get the first element from the list of queried
+    /// relations/edges.
+    fn first(self) -> Option<T>;
+
+    /// If the Option is Some then get the list of queried relations/edges,
+    /// otherwise return an empty vec
+    fn all(self) -> Vec<T>;
+  }
+  impl<T> RelationOptionExt<T> for Option<Relation<T>> {
+    fn first(self) -> Option<T> {
+      self.and_then(|r| r.first())
+    }
+
+    fn all(self) -> Vec<T> {
+      self.map(|r| r.all()).unwrap_or_default()
     }
   }
 }
