@@ -9,6 +9,7 @@ pub enum LibraryRecommendationsParams {
   FetchLibrary,
   FetchApproved,
   FetchToApprove,
+  FetchDenied,
   FetchFull
 }
 
@@ -22,10 +23,15 @@ impl<'a> QueryBuilderInjecter<'a> for LibraryRecommendationsParams {
       Self::None => ().inject(querybuilder),
       Self::FetchLibrary => Fetch([&*model.library]).inject(querybuilder),
       Self::FetchApproved => Fetch([&*model.approved]).inject(querybuilder),
-      Self::FetchToApprove => Fetch([&*model.to_approve]).inject(querybuilder),
-      Self::FetchFull => {
-        Fetch([&*model.library, &*model.approved, &*model.to_approve]).inject(querybuilder)
-      }
+      Self::FetchToApprove => Fetch([&*model.pending]).inject(querybuilder),
+      Self::FetchDenied => Fetch([&*model.denied]).inject(querybuilder),
+      Self::FetchFull => Fetch([
+        &*model.library,
+        &*model.approved,
+        &*model.pending,
+        &*model.denied
+      ])
+      .inject(querybuilder)
     }
   }
 }

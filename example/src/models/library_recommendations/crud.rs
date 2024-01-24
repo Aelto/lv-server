@@ -2,14 +2,16 @@ use crate::prelude::*;
 
 use super::LibraryRecommendationsParams;
 
+/// some private functions on purpose to ensure updates to this record are done
+/// through domain specific functions.
 impl LibraryRecommendations {
-  pub async fn create(mut self, library: Id) -> AppResult<Self> {
+  async fn create(mut self, library: Id) -> AppResult<Self> {
     if self.approved.is_unloaded() {
       self.approved.set_key(vec![]);
     }
 
-    if self.to_approve.is_unloaded() {
-      self.to_approve.set_key(vec![]);
+    if self.pending.is_unloaded() {
+      self.pending.set_key(vec![]);
     }
 
     if self.denied.is_unloaded() {
@@ -49,11 +51,12 @@ impl LibraryRecommendations {
     }
   }
 
-  pub async fn update(self) -> AppResult<Self> {
+  pub(super) async fn update(self) -> AppResult<Self> {
     self.m_update().await
   }
 
-  pub async fn delete(self) -> AppResult<()> {
+  #[allow(unused)]
+  pub(super) async fn delete(self) -> AppResult<()> {
     self.m_delete().await?;
 
     Ok(())
