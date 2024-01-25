@@ -88,19 +88,26 @@ impl Endpoint {
   ) -> proc_macro2::TokenStream {
     let router_name = format_ident!("{}", router_name);
     let verb = format_ident!("{}", self.verb.to_lowercase());
+    let verb_upper = format_ident!("{}", self.verb.to_uppercase());
     let route_fn = match router_type {
       crate::endpoints::RouterType::Fragment => quote::quote!(
         super::super::#router_name::fragment_route(
           cfg,
           URL,
-          actix_web::web::#verb().to(handler)
+          lv_server::csrf::csrf_protection(
+            actix_web::web::#verb(),
+            actix_web::http::Method::#verb_upper
+          ).to(handler)
         );
       ),
       crate::endpoints::RouterType::View => quote::quote!(
         super::super::#router_name::view_route(
           cfg,
           URL,
-          actix_web::web::#verb().to(handler)
+          lv_server::csrf::csrf_protection(
+            actix_web::web::#verb(),
+            actix_web::http::Method::#verb_upper
+          ).to(handler)
         );
       )
     };

@@ -78,7 +78,7 @@ impl maud::Render for BookContent {
     };
 
     html!(
-      div.content {(maud::PreEscaped(rendered_markdown))}
+      div.content hx-disable {(maud::PreEscaped(rendered_markdown))}
     )
   }
 }

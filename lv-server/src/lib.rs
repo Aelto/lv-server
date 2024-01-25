@@ -12,6 +12,8 @@ pub use with_scope::WithScope;
 mod with_trigger;
 pub use with_trigger::WithTrigger;
 
+pub mod csrf;
+
 mod view;
 pub use view::View;
 

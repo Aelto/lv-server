@@ -4,12 +4,16 @@ pub fn page(content: Markup) -> Markup {
   html!(
     (maud::DOCTYPE)
     html lang="en" {
-      head {
+      head
+        data-csrf={(nanoid::nanoid!())} {
+
         meta charset="utf-8";
         title { "lv_server" }
-        script src="/static/htmx.min.js" {}
+        script type="text/javascript" src="/static/htmx.min.js" {}
+        script type="text/javascript" src="/static/main.js" {}
         link href="/static/style.css" rel="stylesheet";
-        meta name="htmx-config" content="{\"defaultSwapStyle\":\"outerHTML\"}";
+        meta name="htmx-config" content="{\"defaultSwapStyle\":\"outerHTML\", \"selfRequestsOnly\": true}";
+        meta http-equiv="Content-Security-Policy" content="default-src 'self';";
       }
       body {
         (crate::fragments::Header::render())
