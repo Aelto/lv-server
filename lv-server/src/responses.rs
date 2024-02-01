@@ -31,3 +31,22 @@ pub fn trigger(mut res: HttpResponse, event: &'static str) -> HttpResponse {
 
   res
 }
+
+/// Send an oob alert message that can be used as a quick way to bubble up
+/// errors to the front-end.
+///
+/// # Setting up
+/// For the errors to appear correctly on the page an anchor div must be placed
+/// in the core layout:
+/// ```html
+/// <div id="lv-alert" hidden ></div>
+/// ```
+/// The errors created by this function will then replace the anchor as they
+/// appear.
+pub fn alert(message: &impl maud::Render) -> maud::Markup {
+  maud::html!(
+    div id="lv-alert" hx-swap-oob="true" onclick="this.setAttribute('hidden', 'hidden')" {
+      (message)
+    }
+  )
+}
