@@ -1113,7 +1113,7 @@ dependencies = [
  "ammonia",
  "chrono",
  "lv-server",
- "maud",
+ "maud 0.25.0",
  "nanoid",
  "once_cell",
  "pulldown-cmark",
@@ -1930,7 +1930,7 @@ dependencies = [
  "actix-web",
  "async-trait",
  "lv-server-endpoints-proc-macro",
- "maud",
+ "maud 0.26.0",
  "serde",
 ]
 
@@ -1978,7 +1978,17 @@ dependencies = [
  "actix-web",
  "futures-util",
  "itoa",
- "maud_macros",
+ "maud_macros 0.25.0",
+]
+
+[[package]]
+name = "maud"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df518b75016b4289cdddffa1b01f2122f4a49802c93191f3133f6dc2472ebcaa"
+dependencies = [
+ "itoa",
+ "maud_macros 0.26.0",
 ]
 
 [[package]]
@@ -1991,6 +2001,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "maud_macros"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa453238ec218da0af6b11fc5978d3b5c3a45ed97b722391a2a11f3306274e18"
+dependencies = [
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
