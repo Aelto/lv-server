@@ -76,9 +76,8 @@ impl Endpoint {
       pub fn url(#(#params : &str),*) -> String {
         use lv_server::Fragment;
         use lv_server::View;
-        let mut base = super::super::#router_name::url("");
-        base.push_str(&format!(#route));
-        base
+
+        super::super::#router_name::url(&format!(#route))
       }
     )
   }

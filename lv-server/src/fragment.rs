@@ -8,12 +8,7 @@ where
   const ID: &'static str;
 
   fn url(path: &str) -> String {
-    let slash = match path.starts_with("/") {
-      true => "",
-      false => "/"
-    };
-
-    format!("/frg/{}{slash}{}", Self::ID, path)
+    format!("/frg/{}/{}", Self::ID, path.trim_start_matches('/'))
   }
 
   /// Create a route for the fragment with a prefix generated from [Fragment::identifier]
