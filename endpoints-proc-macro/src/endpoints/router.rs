@@ -127,6 +127,8 @@ impl Display for Router {
 
     let output = quote::quote! {
       pub mod api {
+        use super::*;
+
         #router
         #router_impl
 
