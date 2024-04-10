@@ -43,9 +43,9 @@ pub fn trigger(mut res: HttpResponse, event: &'static str) -> HttpResponse {
 /// ```
 /// The errors created by this function will then replace the anchor as they
 /// appear.
-pub fn alert(message: &impl maud::Render) -> maud::Markup {
+pub fn alert(class: &str, message: &impl maud::Render) -> maud::Markup {
   maud::html!(
-    div id="lv-alert" hx-swap-oob="true" onclick="this.setAttribute('hidden', 'hidden')" {
+    div id="lv-alert" class={(class)} hx-swap-oob="true" onclick="this.setAttribute('hidden', 'hidden')" {
       (message)
     }
   )
