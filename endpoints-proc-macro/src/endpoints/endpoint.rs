@@ -1,3 +1,8 @@
+use nom::{
+  bytes::complete::{is_not, take_until},
+  character::complete::char,
+  sequence::delimited
+};
 use quote::format_ident;
 
 use crate::prelude::*;
@@ -8,6 +13,7 @@ pub struct Endpoint {
   verb: String,
   route: String,
   params: Vec<String>,
+  extends: Vec<String>,
   service_options: Vec<super::ServiceOption>
 }
 
@@ -15,6 +21,7 @@ impl Endpoint {
   pub fn parse(i: &str) -> IResult<&str, Self> {
     let (i, _) = trim(i)?;
     let (i, name) = take_until1(" ")(i)?;
+    let (i, extends) = many0(Self::parse_extend)(i)?;
     let (i, options) = take_until1("=>")(i)?;
     let (i, _) = trim(i)?;
     let (i, _) = tag("=>")(i)?;
@@ -35,9 +42,19 @@ impl Endpoint {
         verb: verb.trim().to_owned(),
         route: route.to_owned(),
         params,
+        extends,
         service_options: options
       }
     ))
+  }
+
+  fn parse_extend(i: &str) -> IResult<&str, String> {
+    let (i, _) = trim(i)?;
+    let (i, _) = tag("extend")(i)?;
+    let (i, _) = take_until("(")(i)?;
+    let (i, ty) = delimited(char('('), is_not(")"), char(')'))(i)?;
+
+    Ok((i, ty.to_owned()))
   }
 
   fn parse_param(route: &str) -> IResult<&str, String> {
@@ -94,12 +111,22 @@ impl Endpoint {
     let router_name = format_ident!("{}", router_name);
     let verb = format_ident!("{}", self.verb.to_lowercase());
     let verb_upper = format_ident!("{}", self.verb.to_uppercase());
+    let extends: Vec<proc_macro2::TokenStream> = self
+      .extends
+      .iter()
+      .map(|ex| {
+        let ex = format_ident!("{}", ex);
+        quote::quote!(
+          let route = super::super::#router_name::#ex(route);
+        )
+      })
+      .collect();
     let service_options: Vec<proc_macro2::TokenStream> =
       self.service_options.iter().map(|s| s.emit()).collect();
 
     let route_fn = match router_type {
       crate::endpoints::RouterType::Fragment => quote::quote!(
-        super::super::#router_name::fragment_route(
+        let route = super::super::#router_name::fragment_route(
           cfg,
           URL,
           lv_server::csrf::csrf_protection(
@@ -108,9 +135,10 @@ impl Endpoint {
           ).to(handler)
           #(#service_options)*
         );
+        #(#extends)*
       ),
       crate::endpoints::RouterType::View => quote::quote!(
-        super::super::#router_name::view_route(
+        let route = super::super::#router_name::view_route(
           cfg,
           URL,
           lv_server::csrf::csrf_protection(
@@ -119,6 +147,7 @@ impl Endpoint {
           ).to(handler)
           #(#service_options)*
         );
+        #(#extends)*
       )
     };
 

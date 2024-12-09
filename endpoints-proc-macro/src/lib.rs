@@ -2,6 +2,24 @@ use proc_macro::TokenStream;
 
 mod endpoints;
 
+/// # Example
+/// ```rs
+/// // can also extend a route with custom config
+/// impl ProjectEditForms {
+///   fn extend_config_limit(
+///     cfg: &mut actix_web::web::ServiceConfig
+///   ) -> &mut actix_web::web::ServiceConfig {
+///     cfg.app_data(web::FormConfig::default().limit(4096))
+///   }
+/// }
+///
+/// lv_server::endpoints!(ProjectEditForms {
+///   get_index => GET "{account_id}/{project_slug}"
+///   post_create_form => POST "create"
+///   post_edit_form extend(extend_config_limit) => POST "{account_id}/{project_slug}"
+///   delete_project => DELETE "{account_id}/{project_slug}"
+/// });
+/// ```
 #[proc_macro]
 pub fn endpoints(input: TokenStream) -> TokenStream {
   let content = input.to_string();
@@ -17,6 +35,12 @@ pub fn endpoints(input: TokenStream) -> TokenStream {
 
 mod events;
 
+/// # Example
+/// ```rs
+/// lv_server::events!(ProjectEditFormsEvents {
+///   Reload "from:body"
+/// });
+/// ```
 #[proc_macro]
 pub fn events(input: TokenStream) -> TokenStream {
   let content = input.to_string();

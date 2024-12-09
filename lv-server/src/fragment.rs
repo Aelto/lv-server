@@ -12,9 +12,9 @@ where
   }
 
   /// Create a route for the fragment with a prefix generated from [Fragment::identifier]
-  fn fragment_route(
-    cfg: &mut actix_web::web::ServiceConfig, path: &'static str, route: actix_web::Route
-  ) {
-    cfg.route(&Self::url(path), route);
+  fn fragment_route<'a>(
+    cfg: &'a mut actix_web::web::ServiceConfig, path: &'static str, route: actix_web::Route
+  ) -> &'a mut actix_web::web::ServiceConfig {
+    cfg.route(&Self::url(path), route)
   }
 }
