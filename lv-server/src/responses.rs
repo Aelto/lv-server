@@ -1,7 +1,6 @@
-use actix_web::{
-  http::header::{HeaderName, HeaderValue},
-  HttpResponse
-};
+use actix_web::http::header::{HeaderName, HeaderValue};
+
+pub use actix_web::HttpResponse;
 
 pub fn empty_html() -> HttpResponse {
   html(maud::html!())

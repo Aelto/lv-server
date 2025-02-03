@@ -12,6 +12,9 @@ pub use with_scope::WithScope;
 mod with_trigger;
 pub use with_trigger::WithTrigger;
 
+mod ext_maud;
+pub use ext_maud::ExtMaudMarkup;
+
 pub mod csrf;
 
 mod view;
