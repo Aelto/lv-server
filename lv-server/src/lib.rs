@@ -31,3 +31,8 @@ pub use async_trait::async_trait;
 
 pub use lv_server_endpoints_proc_macro::endpoints;
 pub use lv_server_endpoints_proc_macro::events;
+
+pub mod deps {
+  pub use actix_web;
+  pub use maud;
+}
