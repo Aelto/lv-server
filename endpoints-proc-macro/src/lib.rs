@@ -36,10 +36,34 @@ pub fn endpoints(input: TokenStream) -> TokenStream {
 mod events;
 
 /// # Example
+///
+/// Declaring the list of events:
 /// ```rs
 /// lv_server::events!(ProjectEditFormsEvents {
 ///   Reload "from:body"
 /// });
+/// ```
+///
+///
+/// Reacting to the events:
+/// ```rs
+/// div
+///   hx-trigger={(ProjectEditFormsEvents::Reload)}
+///   hx-get={(api::get_index::url())}
+///   hx-target="this"
+///   {"This div sends a GET request on this event"}
+/// ```
+///
+///
+/// Activating the event from an API endpoint:
+/// ```rs
+/// impl api::post_index::Router {
+///   pub async fn endpoint() -> HttpResponse {
+///     ProjectEditForms::render()
+///       .join(lv_server::responses::alert("success", "this is a success alert!"))
+///       .into_response_with_event(ProjectEditFormsEvents::Reload)
+///   }
+/// }
 /// ```
 #[proc_macro]
 pub fn events(input: TokenStream) -> TokenStream {
