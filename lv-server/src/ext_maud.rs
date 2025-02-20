@@ -7,6 +7,14 @@ pub trait ExtMaudMarkup {
 
   /// Turns the current [maud::Markup] into a HTTP response fit for the client.
   fn into_response(self) -> crate::responses::HttpResponse;
+
+  /// Turns the current [maud::Markup] into a HTTP response fit for the client,
+  /// while also sending a trigger for the provided event.
+  ///
+  /// Refer to the [`event!`] macro for events.
+  fn into_response_with_event(
+    self, event: impl crate::WithTrigger
+  ) -> crate::responses::HttpResponse;
 }
 
 impl ExtMaudMarkup for maud::Markup {
@@ -17,5 +25,11 @@ impl ExtMaudMarkup for maud::Markup {
 
   fn into_response(self) -> crate::responses::HttpResponse {
     crate::responses::html(self)
+  }
+
+  fn into_response_with_event(
+    self, event: impl crate::WithTrigger
+  ) -> crate::responses::HttpResponse {
+    event.trigger(self.into_response())
   }
 }
