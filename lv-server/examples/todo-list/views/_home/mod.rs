@@ -12,9 +12,7 @@ lv_server::endpoints!(ViewHome as view {
 
 impl api::get_index::Router {
   async fn endpoint(data: ApiData) -> HttpResponse {
-    let view = ViewHome::render(data);
-
-    lv_server::responses::html(page(view))
+    page(ViewHome::render(data)).into_response()
   }
 }
 
