@@ -4,18 +4,29 @@ with backend (rust) code thanks to [HTMX](https://htmx.org/), [Actix](https://ac
 
 - Actix web serves as the HTTP server
 - Maud does the backend HTML templating using a simple macro-like syntax
-- HTMX allows for dynamic user interfaces that work via standard HTTP requests
+- HTMX allows for dynamic user interfaces that communicate via standard HTTP requests and custom events
 
-Out of the box, combing these three libraries would lead to a somewhat boilerplate-y
-experience due to HTMX' way of using API endpoints for most user actions. `lv-server`
-aims to streamline most of this boilerplate using a combination of macros and traits
-so you get to focus on writing your interface's logic while profiting from compile time
-errors to prevent the common mistakes like typos in endpoint URLs for example.
+One of the main reasons to use such a framework is to move all of the templating
+logic from the frontend to the backend, meaning that your templates can now have
+access to elements that would be otherwise inaccessible to the frontend code unless
+a REST API is setup. By doing so the need for javascript code is eliminated completely (outside of HTMX.js itself),
+saving us from creating such an API or from thinking about serializing our models
+from/to JSON, and allows us to profit from sweet compile errors right in our in HTML templates.
+
+However combining these three libraries without preparation would lead to a somewhat
+boilerplate-y experience due to HTMX' way of using API endpoints for most user actions,
+having to define the endpoints, remembering the routes, avoiding typos, and simply organizing
+a project with so many URLs can be complicated. `lv-server` aims to streamline most
+of this boilerplate using a combination of macros and traits so you get to focus on
+writing your interface's logic while profiting from compile time errors to prevent
+the common mistakes like typos in endpoint URLs for example.
+
 
 ## Using lv-server
-Interfaces made with `lv-server` are composed of two main elements:
+> [A complete example project that showcases a dynamic ToDo list is available](lv-server/examples/todo-list/).
 
-### Views
+User interfaces made with `lv-server` are composed of two main elements:
+### UI: Views
 _[view this code in the example project](lv-server/examples/todo-list/views/_home/mod.rs)_
 ```rs
 pub mod fragments;
@@ -68,7 +79,7 @@ fn routes(cfg: &mut actix_web::web::ServiceConfig) {
 }
 ```
 
-### Fragments
+### UI: Fragments
 _[view this code in the example project](lv-server/examples/todo-list/views/_home/fragments/add_todo_form.rs)_
 ```rs
 use crate::prelude::*;
