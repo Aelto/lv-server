@@ -6,12 +6,21 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-maud = "0.26.0"
-serde = { version = "1.0.193", features = ["serde_derive"] }
-actix-web = "4.4.0"
-async-trait = "0.1.74"
+maud = "0.27.0"
+serde = { version = "1.0.218", features = ["serde_derive"] }
+actix-web = "4.9.0"
+async-trait = "0.1.86"
 
 # used in prints
 # owo-colors = "4.0.0"
 
 lv-server-endpoints-proc-macro = { path = "../endpoints-proc-macro" }
+
+[dev-dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+actix-files = "0.6.6"
+serde = { version = "1.0.218", features = ["derive"] }
+nanoid = "0.4.0"
+
+[[example]]
+name = "todo-list"

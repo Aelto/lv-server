@@ -1,0 +1,94 @@
+{
+  "fragment": {
+    "scope": "rust",
+    "prefix": "fragment",
+    "body": [
+      "use crate::prelude::*;",
+      "",
+      "pub struct ${1:FragmentName};",
+      "",
+      "impl lv_server::Fragment<(), api::Router> for ${1:FragmentName} {",
+      "const ID: &'static str = \"${1:FragmentName}\";",
+      "}",
+      "",
+      "lv_server::endpoints!(${1:FragmentName} {",
+      " get_index => GET \"/\"",
+      "});",
+      "",
+      "impl api::get_index::Router {",
+      "pub async fn endpoint() -> HttpResponse {",
+      "  let view = ${1:FragmentName}::render();",
+      "lv_server::responses::html(view)",
+      "}",
+      "}",
+      "",
+      "impl ${1:FragmentName} {",
+      "pub fn render() -> Markup {html!()}",
+      "}",
+    ]
+  },
+  "view": {
+    "scope": "rust",
+    "prefix": "view",
+    "body": [
+      "use crate::prelude::*;",
+      "",
+      "pub mod fragments;",
+      "",
+      "pub struct ${1:ViewName};",
+      "",
+      "impl",
+      "lv_server::View<()> for ${1:ViewName}",
+      "{",
+      "}",
+      "",
+      "lv_server::endpoints!(${1:ViewName} as view {",
+      "  get_index => GET \"/\"",
+      "});",
+      "",
+      "impl api::get_index::Router {",
+      "async fn endpoint() -> HttpResponse {",
+      "let view = ${1:ViewName}::render();",
+      "",
+      "lv_server::responses::html(page(view))",
+      "}",
+      "}",
+      "",
+      "impl ${1:ViewName} {",
+      "fn render() -> Markup {",
+      "html!()",
+      "}",
+      "}",
+    ]
+  },
+  "hxtrio": {
+    "scope": "rust",
+    "prefix": "hxtrio",
+    "body": [
+      "hx-post={(api::post_index::url())}",
+      "hx-target=\"this\"",
+      "hx-swap=\"outerHTML\""
+    ]
+  },
+  "hxtarget": {
+    "scope": "rust",
+    "prefix": "hxtarget",
+    "body": [
+      "hx-target=\"this\"",
+      "hx-swap=\"outerHTML\""
+    ]
+  },
+  "lvendpoint": {
+    "scope": "rust",
+    "prefix": "lvendpoint",
+    "body": [
+      "impl api::${1:endpoint}::Router {",
+      "  pub async fn endpoint() -> HttpResponse {",
+      "    $2",
+      "    let view = html!();",
+      "    lv_server::responses::html(view)",
+      "  }",
+      "}",
+    ]
+  }
+}

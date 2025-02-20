@@ -1,107 +1,231 @@
-> view the [htmx.md](htmx.md) file to see the HTMX specific notes 
+# LV-Server
+The `lv-server` crate acts as a framework for writing reactive web pages entirely
+with backend (rust) code thanks to [HTMX](https://htmx.org/), [Actix](https://actix.rs/), and [Maud](https://maud.lambda.xyz/).
 
-# Problem 1: htmx, UI routes, fragment routes, and avoiding url clashes
-## problem
-At first it might be simpler to organize the pages and their
-endpoints using basic urls, for example:
-- `GET user/profile` ~> render profile 
-  - `GET user/profile/edit` ~> render profile edit form
-    - `POST user/profile` ~> update profile & return updated profile
+- Actix web serves as the HTTP server
+- Maud does the backend HTML templating using a simple macro-like syntax
+- HTMX allows for dynamic user interfaces that work via standard HTTP requests
 
-But then what happens if we now need `GET user/{slug}/something` ?
+Out of the box, combing these three libraries would lead to a somewhat boilerplate-y
+experience due to HTMX' way of using API endpoints for most user actions. `lv-server`
+aims to streamline most of this boilerplate using a combination of macros and traits
+so you get to focus on writing your interface's logic while profiting from compile time
+errors to prevent the common mistakes like typos in endpoint URLs for example.
 
-## solution
-It can be interesting to split the UI routes & the fragments routes
-- `GET user/{slug}/profile` ~> render profile, listen for events from below fragments
-- `GET app/profile-edit` ~> render profile edit form
-  - `POST app/profile-edit` ~> update profile & send `fetch-profile` event
+## Using lv-server
+Interfaces made with `lv-server` are composed of two main elements:
 
-The prefix `app` is reserved for all fragments so they can add as
-many endpoints as they need.
+### Views
+_[view this code in the example project](lv-server/examples/todo-list/views/_home/mod.rs)_
+```rs
+pub mod fragments;
 
-# Problem 2: fragments, genericity, events
-## problem
-Now that fragments have their own prefix to separate them from the
-pages, how about the genericity of the fragments.
+pub struct ViewHome;
 
-It might be tempting to have the following fragments:
-- `LibraryList` ~> lists the libraries 
-- `LibraryForm` ~> form to create a library
-  - `POST app/library-form`
+impl lv_server::View<(fragments::TodoList, fragments::AddTodoForm)> for ViewHome {}
 
-But then when a library is created multiple solutions are possible
-to update the UI:
-- trigger a `libraries-changed` event for the list, which implies the list should listen for this event. Which is fine as long as there is only one event, but what happens when there are multiple fragments and the amount of events grows?
-- the POST returns the HTML of the library, which is appended to the list, but the form & the list are now __tightly__ coupled. Which means they might as well be a single fragment together.
+lv_server::endpoints!(ViewHome as view {
+  get_index => GET "/"
+});
 
-## solution
-The problem comes from the fact the fragments are too specialized to be
-considered generic fragments so they might as well be coupled.
+impl api::get_index::Router {
+  async fn endpoint(data: ApiData) -> HttpResponse {
+    let view = ViewHome::render(data);
 
-Now whether they use events or append/replace DOM elements is up to preferences, but generally events encourage a more "stateless" way of thinking. Which can also allow for some of these fragments to be used outside their original places.
+    lv_server::responses::html(page(view))
+  }
+}
 
-Ideally fragments should be used in the pages to keep the large amount of
-endpoints manageable. [See Problem 3](#problem-3-complex-pages-numerous-endpoints)
+impl ViewHome {
+  fn render(data: ApiData) -> Markup {
+    html!(
+      .fdn.col.justify-center.items.center {
+        (fragments::TodoList::render(&data.todos()))
+        (fragments::AddTodoForm::render())
+      }
+    )
+  }
+}
+```
 
-# Problem 3: complex pages, numerous endpoints
-On the most complex pages it is easy to reach 10 or 20 endpoints just for the
-page. On top of that a single endpoint can result in two routes because there is
-the actix route and the one used to call the endpoint with real values in place
-of the params.
+[Views](./lv-server/src/view.rs), are the accessible pages of the website.
+A single view can have multiple routes/endpoints, however for smaller but more
+dynamic changes it is recommended to define fragments on the view:
+```rs
+impl lv_server::View<(fragments::TodoList, fragments::AddTodoForm)> for ViewHome {}
+```
 
-## non-solution 1
-A solution could be to use actix' [url_for()](https://docs.rs/actix-web/4.4.1/actix_web/struct.HttpRequest.html#method.url_for)
-to avoid hardcoding the routes, but unfortunately it is as error prone as hand
-writing them with 0 compile time guarantees.
+Linking a fragment to a view tells lv-server to automatically setup an API endpoint
+for that fragment as soon as the view itself is setup. You don't have to worry about
+how or when to declare the URLs of your fragments as long as you link them to a view.
 
-## solution 2
-It might be a good idea to have different "namespaces" or prefixes for the
-routes:
-- `/` (no prefix) for SSR routes
-- `/app` for the domain endpoints of the SSR routes
-- `/frg` for the fragment endpoints,
-  - the fragments endpoints should then use a flat registration
-  - `/frg/{fragment-name}` where the name of the fragment uses the Rust Struct's name
-  converted to snake-case.
+_[view this code in the example project](lv-server/examples/todo-list/main.rs)_
+```rs
+fn routes(cfg: &mut actix_web::web::ServiceConfig) {
+  use lv_server::View;
 
-# Problem 4: fragments and reused code for extracting data off requests
-As the number of fragments grow the amount of duplicated code to handle the 
-extraction of types from requests (be it their paths or bodies) may get
-duplicated in a lot of places.
+  views::ViewHome::router(cfg);
+}
+```
 
-## solution
-Common way to extract data, for example fetching a library from a path, should
-be implemented as an extractor to make it easier and avoid code duplication in
-error handling.
+### Fragments
+_[view this code in the example project](lv-server/examples/todo-list/views/_home/fragments/add_todo_form.rs)_
+```rs
+use crate::prelude::*;
 
-for example:
-- extracting & fetching a library from a `/{library_id}` segment from a req path
-- extracting & fetching the books of a library from a `/{library_id}` & `/{book_id}`
+pub struct AddTodoForm;
 
-It creates conventions that are easy to re-use and learn as the codebase grows.
+impl lv_server::Fragment<(), api::Router> for AddTodoForm {
+  const ID: &'static str = "AddTodoForm";
+}
 
-# Problem 5: htmx attributes on DOM nodes
-Remembering & writing all of the attributes manually can be complicated,
-especially since some patterns are used often.
+lv_server::endpoints!(AddTodoForm {
+  get_index => GET "/"
+  post_add_todo => POST "/todos"
+});
 
-## solution
-Wait until the [PR: Support attribute spreading with iterators](https://github.com/lambda-fairy/maud/pull/408)
-is merged, after which we will implement functions to generate the attributes
-for us.
+impl api::get_index::Router {
+  pub async fn endpoint() -> HttpResponse {
+    let view = html!();
+    lv_server::responses::html(view)
+  }
+}
 
-# Problem 6: error handling
-The way of handling errors is different than what we'd get in REST APIs. For
-example the API returns the HMTL directly with the localized error in it rather
-than error codes for the front-end to handle.
+#[derive(Deserialize)]
+pub struct PostAddTodoForm {
+  text: String
+}
 
-## solution 1: forms, inline errors
-A solution can be to include inline errors inside the form, next to the input fields
+impl api::post_add_todo::Router {
+  pub async fn endpoint(Form(form): Form<PostAddTodoForm>, data: ApiData) -> HttpResponse {
+    if form.text.trim().is_empty() {
+      return AddTodoForm::render()
+        .join(lv_server::responses::alert(
+          "error",
+          &"You can't add an empty todo"
+        ))
+        .into_response();
+    }
 
-## solution 2: buttons, inline errors
-For single buttons that are not part of a form a solution can be to return the
-button again with an error next to it. Inline-style.
+    data.add_todo(form.text);
 
-## solution 3: any, oob errors
-For general errors or out of form errors OOB errors can be used. For example:
-- a single `#toast` div where errors are temporarily inserted.
-- unique tags in the fragment meant to hold specific OOB messages
+    AddTodoForm::render().into_response_with_event(super::TodoListEvents::Reload)
+  }
+}
+
+impl AddTodoForm {
+  pub fn render() -> Markup {
+    html!(
+      form.fdn.row
+        hx-post={(api::post_add_todo::url())}
+        hx-target="this"
+        hx-swap="outerHTML"
+      {
+        input name="text" placeholder="Todo's text" {}
+        input type="submit" value="Add";
+      }
+    )
+  }
+}
+```
+
+Fragments are similar to Views except
+1) they don't have children fragments like views
+2) events can be defined with them.
+3) their endpoints are automatically given a prefix to avoid users hitting them by mistakes
+
+### The `endpoints!` macro
+_[view this code in the example project](lv-server/examples/todo-list/views/_home/fragments/todo_list.rs)_
+```rs
+lv_server::endpoints!(TodoList {
+  get_index => GET "/"
+  get_todo => GET "/todos/{index}"
+
+  delete_todo => DELETE "/todos/{index}"
+
+  get_edit_form => GET "/todos/{index}/edit"
+  post_update_todo => POST "/todos/{index}"
+});
+```
+
+The `endpoints!` macro saves you from a lot of boilerplate and generates nestings
+of modules and structs so everything can be traversed easily but also safely thanks
+to compile time errors.
+
+_[view this code in the example project](lv-server/examples/todo-list/views/_home/fragments/todo_list.rs)_
+```rs
+impl api::delete_todo::Router {
+  pub async fn endpoint(path: Path<usize>, data: ApiData) -> HttpResponse {
+    data.remove_todo_by_index(path.into_inner());
+
+    TodoList::render(&data.todos()).into_response()
+  }
+}
+```
+```rs
+button
+  hx-delete={(api::delete_todo::url(&index.to_string()))}
+  hx-confirm={"Delete todo '"(todo.text)"'?"}
+  {"X"}
+```
+
+For every route that's defined in the `endpoints!` macro, a module with the name
+of that route is created inside the `api` module, for example the `api::delete_todo`
+module above.
+
+In the module a `struct Router` is created with a missing implementation for a 
+`pub async fn endpoint` function. Not implementing the function will cause the
+macro to throw an error, and that function can accept any parameter or return
+anything the `actix_web` crate would accept as a regular endpoint.
+
+
+You may also notice that once an endpoint & its route is defined in the macro there
+is no need to remember that route anymore as now everything can be done through
+the static functions like: `api::delete_todo::url(index: &str)`. Saving you from
+the 404 errors from typos, or allows you to change the route without worrying about
+breaking a form in some long forgotten fragment.
+
+### Utilities
+`lv-server` makes it mandatory add a `data-csrf="any-value-you-want"` to the page's
+`head` element. Without it any request to a view or fragment that's not a GET will
+become a 404. Additionally the page must add a javascript htmx event to append that value
+to the HTMX requests:
+```js
+window.addEventListener('load', () => {
+  document.body.addEventListener('htmx:configRequest', function (evt) {
+    const v = document.head.getAttribute('data-csrf');
+    evt.detail.headers['X-LVSERVER-REQ'] = v;
+  });
+});
+```
+
+Note that this is one of the many layers to protect against CSRF, yet it's a simple
+and efficient protection that it'd be a shame not to have it, hence its mandatory status.
+_[example on how to add it to the page using maud](lv-server/examples/todo-list/page.rs)_
+
+---
+
+A [ExtMaudMarkup](lv-server/src/ext_maud.rs) extension trait is offered by the crate
+to simplify the common operations between maud's Markup, lv-server events, and actix
+HttpResponse.
+
+
+_[view this code in the example project](lv-server/examples/todo-list/views/_home/fragments/add_todo_form.rs.rs)_
+```rs
+TodoList::render_todo_item(&todo, index)
+  .join(lv_server::responses::alert("success", &"Item updated"))
+  .into_response()
+```
+
+---
+
+A basic alert/popup/toast system can be implemented with `lv-server`. Adding the
+following element anywhere on the page is enough:
+```html
+<div id="lv-alert" hidden></div>
+```
+
+Then any lv-server endpoint can trigger an alert using the [lv_server::responses::alert](lv-server/src/responses.rs) function:
+```rs
+lv_server::responses::alert("success", &"Item updated").into_response()
+```
