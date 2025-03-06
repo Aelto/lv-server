@@ -1,3 +1,17 @@
+/// A type can implement [WithRouter] if it needs a route in the Actix app.
+/// 
+/// Types that implement [WithRouter] can also be combined into tuples to
+/// group the configuration of their routes:
+/// ```rs
+/// a.router(cfg);
+/// b.router(cfg);
+/// 
+/// // is the same as:
+/// (a, b).router(cfg);
+/// ```
+/// 
+/// By default both [Views](super::View) and [Fragments](super::Fragment)
+/// use this trait to define their routes. 
 pub trait WithRouter {
   /// The place where the type defines all of the endpoints it depends on
   fn router(cfg: &mut actix_web::web::ServiceConfig);

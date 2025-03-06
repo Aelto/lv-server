@@ -1,25 +1,35 @@
+//! This module contains a set of utility functions to quickly send valid 
+//! Actix responses from the endpoints. 
 use actix_web::http::header::{HeaderName, HeaderValue};
 
 pub use actix_web::HttpResponse;
 
+/// Sends an HttpResponse with an empty HTML body inside it
 pub fn empty_html() -> HttpResponse {
   html(maud::html!())
 }
 
+/// Sends an HttpResponse with supplied body, as long as it implements maud's [Render](maud::Render) trait.
 pub fn as_html(body: &impl maud::Render) -> HttpResponse {
   html(body.render())
 }
 
+/// Sends an HttpResponse with supplied body, as long as it implements maud's [Render](maud::Render) trait.
 pub fn html(body: maud::Markup) -> HttpResponse {
   HttpResponse::Ok()
     .content_type("text/html")
     .body(body.into_string())
 }
 
+/// Sends a completely empty HttpResponse with no Body
 pub fn no_content() -> HttpResponse {
   HttpResponse::NoContent().finish()
 }
 
+/// Modifies the supplied HttpResponse to append it a hx-trigger header for
+/// the given event.
+/// 
+/// Can be used directly if needed, but using the [endpoints!](crate::endpoints) macro might offer better ergonomics.
 pub fn trigger(mut res: HttpResponse, event: &'static str) -> HttpResponse {
   let headers = res.headers_mut();
 

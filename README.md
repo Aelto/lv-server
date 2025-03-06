@@ -70,9 +70,11 @@ how or when to declare the URLs of your fragments as long as you link them to a 
 
 _[view this code in the example project](lv-server/examples/todo-list/main.rs)_
 ```rs
+// setting up a view in the main Actix app:
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   use lv_server::View;
 
+  // this sets up the View itself, but also any fragment it may have:
   views::ViewHome::router(cfg);
 }
 ```
@@ -195,7 +197,7 @@ the 404 errors from typos, or allows you to change the route without worrying ab
 breaking a form in some long forgotten fragment.
 
 ### Utilities
-`lv-server` makes it mandatory add a `data-csrf="any-value-you-want"` to the page's
+`lv-server` makes it mandatory to add a `data-csrf="any-value-you-want"` to the page's
 `head` element. Without it any request to a view or fragment that's not a GET will
 become a 404. Additionally the page must add a javascript htmx event to append that value
 to the HTMX requests:
