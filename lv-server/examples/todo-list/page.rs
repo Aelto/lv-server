@@ -5,19 +5,17 @@ use crate::prelude::*;
 pub fn page(content: Markup) -> Markup {
   html!(
     (maud::DOCTYPE)
-    html lang="en" {
-      head
-        // one of the many layers to protect against CSRF, this one is mandatory
-        // in order to sent any request that's not a GET towards a fragment.
-        data-csrf={(nanoid::nanoid!())}
-      {
+    html lang="en"
+      // one of the many layers to protect against CSRF, this one is mandatory
+      // in order to sent any request that's not a GET towards a fragment.
+      hx-headers={"{\"X-LVSERVER-REQ\": \""(nanoid::nanoid!())"\"}"}
+    {
+      head {
         meta charset="utf-8";
         title { "lv_server" }
         script type="text/javascript" src="/static/htmx.min.js" {}
-        script type="text/javascript" src="/static/main.js" {}
         link rel="stylesheet" href="/static/style.css";
         meta name="htmx-config" content="{\"defaultSwapStyle\":\"outerHTML\", \"selfRequestsOnly\": true}";
-
       }
       body {
         (crate::views::shared::Header::render())

@@ -195,17 +195,10 @@ the 404 errors from typos, or allows you to change the route without worrying ab
 breaking a form in some long forgotten fragment.
 
 ### Utilities
-`lv-server` makes it mandatory add a `data-csrf="any-value-you-want"` to the page's
-`head` element. Without it any request to a view or fragment that's not a GET will
-become a 404. Additionally the page must add a javascript htmx event to append that value
-to the HTMX requests:
-```js
-window.addEventListener('load', () => {
-  document.body.addEventListener('htmx:configRequest', function (evt) {
-    const v = document.head.getAttribute('data-csrf');
-    evt.detail.headers['X-LVSERVER-REQ'] = v;
-  });
-});
+`lv-server` makes it mandatory to include a `X-LVSERVER-REQ` header to any non GET request. Without it any request to a view or fragment that isn't a GET will
+become a 404. The easiest solution to tell HTMX to include the header to its request is to use the [`hx-headers`](https://htmx.org/attributes/hx-headers/) attribute to a parent node, for example adding the attribute to the page's body inside our maud templates:
+```rs
+body hx-headers={"{ \"X-LVSERVER-REQ\": \""(nanoid::nanoid!())"\" }"} {(content)}
 ```
 
 Note that this is one of the many layers to protect against CSRF, yet it's a simple
