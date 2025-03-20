@@ -29,10 +29,13 @@ async fn main() {
   .expect("failed to boot actix HTTP server");
 }
 
+// setting up a view in the main Actix app:
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   use lv_server::View;
 
   views::shared::fragments_router(cfg);
+
+  // this sets up the View itself, but also any fragment it may have:
   views::ViewHome::router(cfg);
 
   cfg.service(actix_files::Files::new("/static", "./examples/static"));

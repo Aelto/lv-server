@@ -70,9 +70,11 @@ how or when to declare the URLs of your fragments as long as you link them to a 
 
 _[view this code in the example project](lv-server/examples/todo-list/main.rs)_
 ```rs
+// setting up a view in the main Actix app:
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   use lv_server::View;
 
+  // this sets up the View itself, but also any fragment it may have:
   views::ViewHome::router(cfg);
 }
 ```
