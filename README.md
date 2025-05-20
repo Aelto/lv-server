@@ -91,16 +91,8 @@ impl lv_server::Fragment<(), api::Router> for AddTodoForm {
 }
 
 lv_server::endpoints!(AddTodoForm {
-  get_index => GET "/"
   post_add_todo => POST "/todos"
 });
-
-impl api::get_index::Router {
-  pub async fn endpoint() -> HttpResponse {
-    let view = html!();
-    lv_server::responses::html(view)
-  }
-}
 
 #[derive(Deserialize)]
 pub struct PostAddTodoForm {
