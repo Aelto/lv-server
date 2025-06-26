@@ -1,5 +1,5 @@
-//! This module contains a set of utility functions to quickly send valid 
-//! Actix responses from the endpoints. 
+//! This module contains a set of utility functions to quickly send valid
+//! Actix responses from the endpoints.
 use actix_web::http::header::{HeaderName, HeaderValue};
 
 pub use actix_web::HttpResponse;
@@ -26,9 +26,26 @@ pub fn no_content() -> HttpResponse {
   HttpResponse::NoContent().finish()
 }
 
+/// Adds a HX-Redirect header to the response to perform a front-end redirect
+/// once the response is received.
+pub fn redirect(mut res: HttpResponse, target_url: &str) -> HttpResponse {
+  use std::str::FromStr;
+
+  if let Ok(value) = HeaderValue::from_str(target_url) {
+    // HeaderName::from_static(str) doesn't accept headers with uppercase letters
+    if let Ok(name) = HeaderName::from_str("HX-Redirect") {
+      let headers = res.headers_mut();
+
+      headers.append(name, value);
+    }
+  }
+
+  res
+}
+
 /// Modifies the supplied HttpResponse to append it a hx-trigger header for
 /// the given event.
-/// 
+///
 /// Can be used directly if needed, but using the [endpoints!](crate::endpoints) macro might offer better ergonomics.
 pub fn trigger(mut res: HttpResponse, event: &'static str) -> HttpResponse {
   let headers = res.headers_mut();
