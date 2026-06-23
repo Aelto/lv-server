@@ -96,7 +96,7 @@ impl Endpoint {
     let params = self.params.iter().map(|p| format_ident!("{}", p));
 
     quote::quote!(
-      pub fn url(#(#params : &str),*) -> String {
+      pub fn url(#(#params : impl std::fmt::Display),*) -> String {
         use lv_server::Fragment;
         use lv_server::View;
 
