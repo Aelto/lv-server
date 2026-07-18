@@ -9,6 +9,18 @@ use actix_web::error::{ErrorConflict, ErrorNotFound};
 /// Actix' [actix_web::FromRequest] trait.
 ///
 /// ```
+/// struct Todo {
+///   id: String,
+///   text: String
+/// }
+///
+/// fn fake_db_search(id: &str) -> Option<Todo> {
+///   Some(Todo {
+///     id: id.to_owned(),
+///     text: "Lorem".to_owned()
+///   })
+/// }
+///
 /// #[async_trait::async_trait]
 /// impl lv_server::PathExtractor for Todo {
 ///   type Params = String;
@@ -22,7 +34,7 @@ use actix_web::error::{ErrorConflict, ErrorNotFound};
 ///   }
 ///
 ///   async fn from_params(params: String) -> Option<Self> {
-///     DB.getTodoById(&params)
+///     fake_db_search(&params)
 ///   }
 /// }
 ///
