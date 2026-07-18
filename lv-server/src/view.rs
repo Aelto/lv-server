@@ -62,8 +62,7 @@ use crate::WithRouter;
 /// ```
 ///
 /// While [Fragments](super::Fragment) are expected as the first generic
-/// type, anything that implements that implements the [WithRouter](super::WithRouter) trait will work, allowing you to append any type
-/// you may want to the view's router.
+/// type, anything that implements that implements the [WithRouter](super::WithRouter) trait will work, allowing you to append any type you may want to the view's router.
 pub trait View<Fragments>: WithRouter
 where
   Fragments: WithRouter
