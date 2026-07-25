@@ -2,6 +2,7 @@ use lv_server::deps::actix_web;
 
 pub mod prelude;
 pub mod views;
+pub mod components;
 
 mod app_data;
 mod page;
@@ -37,6 +38,8 @@ fn routes(cfg: &mut actix_web::web::ServiceConfig) {
 
   // this sets up the View itself, but also any fragment it may have:
   views::ViewHome::router(cfg);
+
+  components::paginated_todos::PaginatedFakeItem::router(cfg);
 
   cfg.service(actix_files::Files::new("/static", "./examples/static"));
 }

@@ -41,7 +41,7 @@ impl api::get_todo::Router {
     let index = path.into_inner();
     let todo = data.todos().remove(index);
 
-    TodoList::render_todo_item(&todo, index).into_response()
+    TodoList::render_todo_item(&todo).into_response()
   }
 }
 
@@ -61,12 +61,12 @@ pub struct PostUpdateTodoForm {
 
 impl api::post_update_todo::Router {
   pub async fn endpoint(
-    path: Path<usize>, Form(form): Form<PostUpdateTodoForm>, data: ApiData
+    path: Path<String>, Form(form): Form<PostUpdateTodoForm>, data: ApiData
   ) -> HttpResponse {
-    let index = path.into_inner();
-    let todo = data.update_todo_by_index(index, form.text);
+    let id = path.into_inner();
+    let todo = data.update_todo_by_id(id, form.text);
 
-    TodoList::render_todo_item(&todo, index)
+    TodoList::render_todo_item(&todo)
       .join(lv_server::responses::alert("success", &"Item updated"))
       .into_response()
   }
@@ -82,27 +82,27 @@ impl TodoList {
       {
         .fdn.title {"Your todos"}
         ul.fdn.col {
-          @for (index, todo) in todos.iter().enumerate() {
-            (Self::render_todo_item(todo, index))
+          @for todo in todos {
+            (Self::render_todo_item(todo))
           }
         }
       }
     )
   }
 
-  fn render_todo_item(todo: &Todo, index: usize) -> Markup {
+  fn render_todo_item(todo: &Todo) -> Markup {
     html!(
       li.fdn.row.items-center
       {
         (todo.text)
 
         button
-          hx-delete={(api::delete_todo::url(&index.to_string()))}
+          hx-delete={(api::delete_todo::url(&todo.id))}
           hx-confirm={"Delete todo '"(todo.text)"'?"}
           {"X"}
 
         button
-          hx-get={(api::get_edit_form::url(&index.to_string()))}
+          hx-get={(api::get_edit_form::url(&todo.id))}
           hx-target="closest li"
           hx-swap="outerHTML"
           {"✏️"}

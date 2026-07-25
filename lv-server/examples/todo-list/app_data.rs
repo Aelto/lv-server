@@ -10,7 +10,12 @@ pub struct AppData {
 
 #[derive(Clone, Default)]
 pub struct Todo {
+  pub id: String,
   pub text: String
+}
+
+pub struct FakeItem {
+  pub id: String
 }
 
 impl AppData {
@@ -30,18 +35,22 @@ impl AppData {
 
   pub fn add_todo(&self, text: String) {
     let mut cur = self.todos();
-    cur.push(Todo { text });
+    let id = cur.len().to_string();
+    cur.push(Todo { id, text });
 
     self.set_todos(cur);
   }
 
-  pub fn update_todo_by_index(&self, index: usize, text: String) -> Todo {
+  pub fn update_todo_by_id(&self, id: String, text: String) -> Todo {
     let mut cur = self.todos();
-    let new_todo = Todo { text };
+    let new_todo = Todo { id: id.clone(), text };
 
-    if cur.len() > index {
-      cur[index] = new_todo.clone();
+    for todo in &mut cur {
+      if todo.id == id {
+        *todo = new_todo.clone();
+      }
     }
+
 
     self.set_todos(cur);
 
@@ -53,5 +62,17 @@ impl AppData {
     cur.remove(index);
 
     self.set_todos(cur);
+  }
+
+  pub fn find_fake_items_after(&self, id: &str) -> Vec<FakeItem> {
+    let number: i64 = id.parse().unwrap();
+
+    vec![
+      FakeItem { id: (number + 1).to_string() },
+      FakeItem { id: (number + 2).to_string() },
+      FakeItem { id: (number + 3).to_string() },
+      FakeItem { id: (number + 4).to_string() },
+      FakeItem { id: (number + 5).to_string() },
+    ]
   }
 }

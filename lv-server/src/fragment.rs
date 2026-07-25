@@ -78,7 +78,7 @@ where
     format!("/frg/{}/{}", Self::ID, path.trim_start_matches('/'))
   }
 
-  /// Create a route for the fragment with a prefix generated from [Fragment::identifier]
+  /// Create a route for the fragment with a prefix generated from [Fragment::ID]
   fn fragment_route<'a>(
     cfg: &'a mut actix_web::web::ServiceConfig, path: &'static str, route: actix_web::Route
   ) -> &'a mut actix_web::web::ServiceConfig {

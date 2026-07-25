@@ -8,6 +8,7 @@ impl lv_server::View<(fragments::TodoList, fragments::AddTodoForm)> for ViewHome
 
 lv_server::endpoints!(ViewHome as view {
   get_index => GET "/"
+
 });
 
 impl api::get_index::Router {
@@ -18,10 +19,16 @@ impl api::get_index::Router {
 
 impl ViewHome {
   fn render(data: ApiData) -> Markup {
+    use crate::components::paginated_todos::PaginatedFakeItem;
+
     html!(
-      .fdn.col.justify-center.items.center {
+      .fdn.col.justify-center.items-center {
         (fragments::TodoList::render(&data.todos()))
         (fragments::AddTodoForm::render())
+      }
+
+      .fdn.col.justify-center.items-center {
+        (PaginatedFakeItem::render(&[]))
       }
     )
   }
