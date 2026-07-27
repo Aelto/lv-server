@@ -12,6 +12,9 @@ pub use with_scope::WithScope;
 mod with_trigger;
 pub use with_trigger::WithTrigger;
 
+mod with_endpoint;
+pub use with_endpoint::WithEndpoint;
+
 mod ext_maud;
 pub use ext_maud::ExtMaudMarkup;
 
@@ -31,11 +34,12 @@ pub use async_trait::async_trait;
 
 pub use lv_server_endpoints_proc_macro::endpoints;
 pub use lv_server_endpoints_proc_macro::events;
-
+pub use lv_server_endpoints_proc_macro::procedure;
 #[cfg(feature = "components")]
 pub mod components;
 
 pub mod deps {
   pub use actix_web;
   pub use maud;
+  pub use blake3;
 }

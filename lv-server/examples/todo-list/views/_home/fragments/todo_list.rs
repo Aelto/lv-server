@@ -73,6 +73,7 @@ impl api::post_update_todo::Router {
 
 
 use std::future::Future;
+use std::io::Read;
 use std::pin::Pin;
 use std::sync::LazyLock;
 use actix_web::HttpRequest;
@@ -80,13 +81,13 @@ use actix_web::HttpResponse;
 use actix_web::web::Path;
 
 impl api::Router {
-  pub fn once_get(id: &str, handler: fn(actix_web::HttpRequest, actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>>) -> String
+  pub fn once_get(id: &str, handler: crate::Handler) -> String
   {
     let url = id;
     let mut lock = crate::RESOURCES.lock().unwrap();
 
     if !lock.contains_key(url) {
-      lock.insert(url.to_string(), handler);
+      lock.insert(url.to_string(), Box::new(handler));
     }
 
     drop(lock);
@@ -114,9 +115,9 @@ impl TodoList {
   }
 
   fn render_todo_item(todo: &Todo) -> Markup {
-    fn endpoint(request: HttpRequest, body: actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>> {
-      use actix_web::FromRequest;
-      async fn inner(request: HttpRequest, body: actix_web::web::Payload) -> HttpResponse {
+    static URL: LazyLock<String> = lv_server::procedure!(fn endpoint(request: HttpRequest, body: actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>> {
+      Box::pin(async move {
+        use actix_web::FromRequest;
         #[derive(Deserialize, Debug)]
         struct F {
           id: String
@@ -128,12 +129,8 @@ impl TodoList {
 
         data.remove_todo_by_id(&form.id);
         TodoList::render(&data.todos()).into_response()
-      }
-
-      Box::pin(inner(request, body))
-    }
-
-    static URL: LazyLock<String> = LazyLock::new(|| api::Router::once_get("unique", endpoint));
+      })
+    });
 
     html!(
       li.fdn.row.items-center

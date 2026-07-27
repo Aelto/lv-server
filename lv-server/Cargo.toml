@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["components"]
+
+# if enabled, gives access to pre-made generic fragments for commonly encountered
+# scenarios such as pagination, ...
+components = []
 
 [dependencies]
 maud = "0.27.0"
@@ -11,8 +17,9 @@ serde = { version = "1.0.218", features = ["serde_derive"] }
 actix-web = "4.9.0"
 async-trait = "0.1.86"
 
-# used in prints
-# owo-colors = "4.0.0"
+ # used for hashing strings and generate unique IDs, lv-server re-exports it
+ # so it can be used in macros
+blake3 = "1.8.5"
 
 lv-server-endpoints-proc-macro = { path = "../endpoints-proc-macro" }
 
@@ -21,6 +28,7 @@ tokio = { version = "1.43.0", features = ["full"] }
 actix-files = "0.6.6"
 serde = { version = "1.0.218", features = ["derive"] }
 nanoid = "0.4.0"
+inventory = "0.3"
 
 [[example]]
 name = "todo-list"

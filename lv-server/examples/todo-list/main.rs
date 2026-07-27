@@ -1,3 +1,4 @@
+use actix_web::FromRequest;
 use lv_server::deps::actix_web;
 
 pub mod prelude;
@@ -40,12 +41,19 @@ use std::collections::HashMap;
 use actix_web::HttpRequest;
 use actix_web::HttpResponse;
 use actix_web::web::Path;
+
+pub type Handler = Box<
+  dyn Fn(actix_web::HttpRequest, actix_web::web::Payload)
+          -> Pin<Box<dyn Future<Output = HttpResponse>>>
+          + Send
+          + Sync,
+>;
+
 pub static RESOURCES: LazyLock<
   Mutex<
     HashMap<
       String,
-      fn(actix_web::HttpRequest, actix_web::web::Payload)
-        -> Pin<Box<dyn Future<Output=HttpResponse>>>
+      Handler
     >
   >
 > = LazyLock::new(|| Mutex::new(HashMap::new()));

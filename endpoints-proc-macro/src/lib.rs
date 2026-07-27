@@ -78,6 +78,19 @@ pub fn events(input: TokenStream) -> TokenStream {
   TokenStream::from_str(&output).unwrap_or_default()
 }
 
+mod procedures;
+
+#[proc_macro]
+pub fn procedure(input: TokenStream) -> TokenStream {
+  let output = procedures::Procedure::parse(input)
+    .emit();
+
+  // use the following to debug outputs
+  // eprintln!("{output}");
+
+  output
+}
+
 mod prelude {
 
   pub use nom::bytes::complete::{tag, take_until1, take_while, take_while1};
