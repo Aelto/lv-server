@@ -33,7 +33,7 @@ impl Procedure {
         let mut lock = crate::RESOURCES.lock().unwrap();
 
         if !lock.contains_key(&url) {
-          lock.insert(url, Box::new(endpoint));
+          lock.insert(url, endpoint);
         }
 
         drop(lock);
@@ -42,10 +42,4 @@ impl Procedure {
       })
     }
   }
-}
-
-impl std::fmt::Display for Procedure {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
 }

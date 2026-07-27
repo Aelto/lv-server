@@ -42,12 +42,9 @@ use actix_web::HttpRequest;
 use actix_web::HttpResponse;
 use actix_web::web::Path;
 
-pub type Handler = Box<
-  dyn Fn(actix_web::HttpRequest, actix_web::web::Payload)
-          -> Pin<Box<dyn Future<Output = HttpResponse>>>
-          + Send
-          + Sync,
->;
+pub type Handler =
+  fn(actix_web::HttpRequest, actix_web::web::Payload)
+          -> Pin<Box<dyn Future<Output = HttpResponse>>>;
 
 pub static RESOURCES: LazyLock<
   Mutex<

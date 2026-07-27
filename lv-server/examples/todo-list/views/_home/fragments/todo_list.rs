@@ -80,22 +80,6 @@ use actix_web::HttpRequest;
 use actix_web::HttpResponse;
 use actix_web::web::Path;
 
-impl api::Router {
-  pub fn once_get(id: &str, handler: crate::Handler) -> String
-  {
-    let url = id;
-    let mut lock = crate::RESOURCES.lock().unwrap();
-
-    if !lock.contains_key(url) {
-      lock.insert(url.to_string(), Box::new(handler));
-    }
-
-    drop(lock);
-
-    format!("/lv-server/anonymous/{url}")
-  }
-}
-
 impl TodoList {
   pub fn render(todos: &Vec<Todo>) -> Markup {
     html!(

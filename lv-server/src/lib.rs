@@ -12,9 +12,6 @@ pub use with_scope::WithScope;
 mod with_trigger;
 pub use with_trigger::WithTrigger;
 
-mod with_endpoint;
-pub use with_endpoint::WithEndpoint;
-
 mod ext_maud;
 pub use ext_maud::ExtMaudMarkup;
 
