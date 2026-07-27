@@ -1,5 +1,3 @@
-use actix_web::web::Path;
-
 use crate::prelude::*;
 
 pub struct TodoList;
@@ -72,6 +70,31 @@ impl api::post_update_todo::Router {
   }
 }
 
+
+
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::LazyLock;
+use actix_web::HttpRequest;
+use actix_web::HttpResponse;
+use actix_web::web::Path;
+
+impl api::Router {
+  pub fn once_get(id: &str, handler: fn(actix_web::HttpRequest, actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>>) -> String
+  {
+    let url = id;
+    let mut lock = crate::RESOURCES.lock().unwrap();
+
+    if !lock.contains_key(url) {
+      lock.insert(url.to_string(), handler);
+    }
+
+    drop(lock);
+
+    format!("/lv-server/anonymous/{url}")
+  }
+}
+
 impl TodoList {
   pub fn render(todos: &Vec<Todo>) -> Markup {
     html!(
@@ -91,15 +114,41 @@ impl TodoList {
   }
 
   fn render_todo_item(todo: &Todo) -> Markup {
+    fn endpoint(request: HttpRequest, body: actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>> {
+      use actix_web::FromRequest;
+      async fn inner(request: HttpRequest, body: actix_web::web::Payload) -> HttpResponse {
+        #[derive(Deserialize, Debug)]
+        struct F {
+          id: String
+        }
+
+        let mut body = body.into_inner();
+        let form: Form<F> = <Form<F> as FromRequest>::from_request(&request, &mut body).await.unwrap();
+        let data = <ApiData as FromRequest>::from_request(&request, &mut body).await.unwrap();
+
+        data.remove_todo_by_id(&form.id);
+        TodoList::render(&data.todos()).into_response()
+      }
+
+      Box::pin(inner(request, body))
+    }
+
+    static URL: LazyLock<String> = LazyLock::new(|| api::Router::once_get("unique", endpoint));
+
     html!(
       li.fdn.row.items-center
       {
         (todo.text)
 
-        button
-          hx-delete={(api::delete_todo::url(&todo.id))}
-          hx-confirm={"Delete todo '"(todo.text)"'?"}
-          {"X"}
+          form
+            hx-post={(URL.as_str())}
+          {
+            input type="hidden" name="id" value={(todo.id)};
+            button
+              {"X"}
+          }
+
+
 
         button
           hx-get={(api::get_edit_form::url(&todo.id))}

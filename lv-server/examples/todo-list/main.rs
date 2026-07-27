@@ -7,6 +7,8 @@ pub mod components;
 mod app_data;
 mod page;
 
+
+
 #[tokio::main]
 async fn main() {
   use actix_web::App;
@@ -30,6 +32,24 @@ async fn main() {
   .expect("failed to boot actix HTTP server");
 }
 
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Mutex;
+use std::sync::LazyLock;
+use std::collections::HashMap;
+use actix_web::HttpRequest;
+use actix_web::HttpResponse;
+use actix_web::web::Path;
+pub static RESOURCES: LazyLock<
+  Mutex<
+    HashMap<
+      String,
+      fn(actix_web::HttpRequest, actix_web::web::Payload)
+        -> Pin<Box<dyn Future<Output=HttpResponse>>>
+    >
+  >
+> = LazyLock::new(|| Mutex::new(HashMap::new()));
+
 // setting up a view in the main Actix app:
 fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   use lv_server::View;
@@ -40,6 +60,18 @@ fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   views::ViewHome::router(cfg);
 
   components::paginated_todos::PaginatedFakeItem::router(cfg);
+  async fn handler(request: HttpRequest, body: actix_web::web::Payload, path: Path<String>) -> HttpResponse {
+    let id = path.into_inner();
+    let lock = RESOURCES.lock().unwrap();
+    if let Some(handler) = lock.get(&id) {
+      let response = handler(request, body);
+
+      return response.await
+    }
+
+    panic!()
+  }
+  cfg.route("/lv-server/anonymous/{id}", actix_web::web::post().to(handler));
 
   cfg.service(actix_files::Files::new("/static", "./examples/static"));
 }

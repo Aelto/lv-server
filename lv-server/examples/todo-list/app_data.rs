@@ -64,6 +64,13 @@ impl AppData {
     self.set_todos(cur);
   }
 
+  pub fn remove_todo_by_id(&self, id: &str) {
+    let mut cur = self.todos();
+    cur.retain(|t| t.id != id);
+
+    self.set_todos(cur);
+  }
+
   pub fn find_fake_items_after(&self, id: &str) -> Vec<FakeItem> {
     let number: i64 = id.parse().unwrap();
 
