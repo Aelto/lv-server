@@ -29,15 +29,8 @@ impl Procedure {
         let mut url = hasher.finalize().to_string();
         url.truncate(16);
 
-        let full_url = format!("/lv-server/anonymous/{url}");
-        let mut lock = crate::RESOURCES.lock().unwrap();
-
-        if !lock.contains_key(&url) {
-          lock.insert(url, endpoint);
-        }
-
-        drop(lock);
-
+        let full_url = format!("/lvsrv/procs/{url}");
+        lv_server::procedures::registry::add_handler_if_missing(url, endpoint);
         full_url
       })
     }

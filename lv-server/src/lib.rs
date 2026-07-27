@@ -1,4 +1,5 @@
 pub mod responses;
+pub mod procedures;
 
 mod with_router;
 pub use with_router::WithRouter;
