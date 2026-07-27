@@ -98,22 +98,20 @@ impl TodoList {
   }
 
   fn render_todo_item(todo: &Todo) -> Markup {
-    static URL: LazyLock<String> = lv_server::procedure!(fn endpoint(request: HttpRequest, body: actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>> {
-      Box::pin(async move {
-        use actix_web::FromRequest;
-        #[derive(Deserialize, Debug)]
-        struct F {
-          id: String
-        }
+    static URL: LazyLock<String> = lv_server::procedure!(
+      use actix_web::FromRequest;
+      #[derive(Deserialize, Debug)]
+      struct F {
+        id: String
+      }
 
-        let mut body = body.into_inner();
-        let form: Form<F> = <Form<F> as FromRequest>::from_request(&request, &mut body).await.unwrap();
-        let data = <ApiData as FromRequest>::from_request(&request, &mut body).await.unwrap();
+      let mut body = body.into_inner();
+      let form: Form<F> = <Form<F> as FromRequest>::from_request(&request, &mut body).await.unwrap();
+      let data = <ApiData as FromRequest>::from_request(&request, &mut body).await.unwrap();
 
-        data.remove_todo_by_id(&form.id);
-        TodoList::render(&data.todos()).into_response()
-      })
-    });
+      data.remove_todo_by_id(&form.id);
+      TodoList::render(&data.todos()).into_response()
+    );
 
     html!(
       li.fdn.row.items-center

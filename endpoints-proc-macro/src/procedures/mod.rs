@@ -20,7 +20,11 @@ impl Procedure {
 
     quote::quote! {
       LazyLock::new(|| {
-        #handler
+        fn endpoint(request: HttpRequest, body: actix_web::web::Payload) -> Pin<Box<dyn Future<Output=HttpResponse>>> {
+          Box::pin(async move {
+            #handler
+          })
+        }
         let mut hasher = lv_server::deps::blake3::Hasher::new();
         if let Some(last) = file!().rsplit_once("/") {
           hasher.update(last.1.as_bytes());
