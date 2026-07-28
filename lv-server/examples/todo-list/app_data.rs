@@ -43,14 +43,16 @@ impl AppData {
 
   pub fn update_todo_by_id(&self, id: String, text: String) -> Todo {
     let mut cur = self.todos();
-    let new_todo = Todo { id: id.clone(), text };
+    let new_todo = Todo {
+      id: id.clone(),
+      text
+    };
 
     for todo in &mut cur {
       if todo.id == id {
         *todo = new_todo.clone();
       }
     }
-
 
     self.set_todos(cur);
 
@@ -75,11 +77,21 @@ impl AppData {
     let number: i64 = id.parse().unwrap();
 
     vec![
-      FakeItem { id: (number + 1).to_string() },
-      FakeItem { id: (number + 2).to_string() },
-      FakeItem { id: (number + 3).to_string() },
-      FakeItem { id: (number + 4).to_string() },
-      FakeItem { id: (number + 5).to_string() },
+      FakeItem {
+        id: (number + 1).to_string()
+      },
+      FakeItem {
+        id: (number + 2).to_string()
+      },
+      FakeItem {
+        id: (number + 3).to_string()
+      },
+      FakeItem {
+        id: (number + 4).to_string()
+      },
+      FakeItem {
+        id: (number + 5).to_string()
+      },
     ]
   }
 }

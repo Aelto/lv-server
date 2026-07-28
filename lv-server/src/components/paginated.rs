@@ -2,12 +2,18 @@ use std::marker::PhantomData;
 
 pub struct Paginated<I>(PhantomData<I>);
 
-impl<I> Paginated<I>  where I: ComponentPagination{
+impl<I> Paginated<I>
+where
+  I: ComponentPagination
+{
   pub fn router(cfg: &mut actix_web::web::ServiceConfig) {
     I::router(cfg);
   }
 
-  pub fn render(items: &[I]) -> maud::Markup where Self: Sized{
+  pub fn render(items: &[I]) -> maud::Markup
+  where
+    Self: Sized
+  {
     I::render(items)
   }
 }
@@ -21,7 +27,10 @@ pub trait ComponentPagination {
   const COMPONENT_ID: &'static str;
 
   fn router(cfg: &mut actix_web::web::ServiceConfig) {
-    cfg.route(&Self::api_post_load_more_url(), Self::endpoint_load_more(actix_web::web::post()));
+    cfg.route(
+      &Self::api_post_load_more_url(),
+      Self::endpoint_load_more(actix_web::web::post())
+    );
   }
 
   fn endpoint_load_more(route: actix_web::Route) -> actix_web::Route;
@@ -31,11 +40,20 @@ pub trait ComponentPagination {
     format!("/frg/lvs/{}/load-more", Self::COMPONENT_ID)
   }
 
-  fn classes_item<'a>() -> &'a str {""}
-  fn classes_item_list<'a>() -> &'a str {""}
-  fn classes_load_more_button<'a>() -> &'a str {""}
+  fn classes_item<'a>() -> &'a str {
+    ""
+  }
+  fn classes_item_list<'a>() -> &'a str {
+    ""
+  }
+  fn classes_load_more_button<'a>() -> &'a str {
+    ""
+  }
 
-  fn render(items: &[Self]) -> maud::Markup where Self: Sized{
+  fn render(items: &[Self]) -> maud::Markup
+  where
+    Self: Sized
+  {
     maud::html!(
       // forced to do that to avoid a bug in maud's macro
       @for i in items.iter().map(|i| i.render_item()) {
@@ -93,7 +111,6 @@ pub trait ComponentPagination {
 //     STYLES: PaginatedStyles,
 //     RENDERING: PaginatedRender
 // {
-
 
 //   fn post_load_more_url() -> String {
 //     format!("/frg/lvs/{}/load-more", API::ID)

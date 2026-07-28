@@ -1,6 +1,6 @@
-use actix_web::{HttpResponse, web::Form};
-use lv_server::{ExtMaudMarkup, components::paginated};
 use crate::app_data::ApiData;
+use actix_web::{web::Form, HttpResponse};
+use lv_server::{components::paginated, ExtMaudMarkup};
 
 pub type PaginatedFakeItem = paginated::Paginated<crate::app_data::FakeItem>;
 

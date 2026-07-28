@@ -108,8 +108,7 @@ impl TodoList {
           ))}
         {
           input type="hidden" name="id" value={(todo.id)};
-          button
-            {"X"}
+          button {"X"}
         }
 
         button

@@ -17,8 +17,7 @@ serde = { version = "1.0.218", features = ["serde_derive"] }
 actix-web = "4.9.0"
 async-trait = "0.1.86"
 
- # used for hashing strings and generate unique IDs, lv-server re-exports it
- # so it can be used in macros
+ # used for registering the procedures at compile time.
 inventory = "0.3"
 
 lv-server-endpoints-proc-macro = { path = "../endpoints-proc-macro" }

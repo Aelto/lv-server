@@ -1,5 +1,5 @@
-use maud::Render;
 use crate::responses::alert;
+use maud::Render;
 
 pub trait ExtMaudMarkup {
   /// Offers the ability to append the given [maud::Markup] to Self, resulting
