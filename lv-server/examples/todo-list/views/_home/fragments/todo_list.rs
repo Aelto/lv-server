@@ -70,15 +70,6 @@ impl api::post_update_todo::Router {
   }
 }
 
-
-
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::LazyLock;
-use actix_web::HttpRequest;
-use actix_web::HttpResponse;
-use actix_web::web::Path;
-
 impl TodoList {
   pub fn render(todos: &Vec<Todo>) -> Markup {
     html!(
@@ -98,20 +89,19 @@ impl TodoList {
   }
 
   fn render_todo_item(todo: &Todo) -> Markup {
-    static URL: LazyLock<String> = lv_server::procedure!(
-      use actix_web::FromRequest;
-      #[derive(Deserialize, Debug)]
+    let url = lv_server::procedure!({
+      use crate::prelude::*;
+      use actix_web::web::Form;
+      #[derive(serde::Deserialize)]
       struct F {
         id: String
       }
 
-      let mut body = body.into_inner();
-      let form: Form<F> = <Form<F> as FromRequest>::from_request(&request, &mut body).await.unwrap();
-      let data = <ApiData as FromRequest>::from_request(&request, &mut body).await.unwrap();
-
-      data.remove_todo_by_id(&form.id);
-      TodoList::render(&data.todos()).into_response()
-    );
+      async |Form(form): Form<F>, data: crate::app_data::ApiData| {
+        data.remove_todo_by_id(&form.id);
+        crate::views::_home::fragments::TodoList::render(&data.todos()).into_response()
+      }
+    });
 
     html!(
       li.fdn.row.items-center
@@ -119,14 +109,12 @@ impl TodoList {
         (todo.text)
 
           form
-            hx-post={(URL.as_str())}
+            hx-post={(url)}
           {
             input type="hidden" name="id" value={(todo.id)};
             button
               {"X"}
           }
-
-
 
         button
           hx-get={(api::get_edit_form::url(&todo.id))}

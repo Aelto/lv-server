@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use proc_macro::TokenStream;
 
 mod endpoints;
@@ -82,8 +84,48 @@ mod procedures;
 
 #[proc_macro]
 pub fn procedure(input: TokenStream) -> TokenStream {
-  let output = procedures::Procedure::parse(input)
-    .emit();
+  let uuid = nanoid::nanoid!();
+
+  let input = proc_macro2::TokenStream::from(input);
+  let output = quote::quote! {
+    {
+      let _ = #input ;
+
+      #uuid
+    }
+  };
+
+  procedures::REGISTRY
+    .lock()
+    .unwrap()
+    .insert(uuid, input.to_string());
+
+  // use the following to debug outputs
+  // eprintln!("{input}");
+  eprintln!("{output}");
+
+  output.into()
+}
+
+#[proc_macro]
+pub fn register_procedures(input: TokenStream) -> TokenStream {
+  let output = procedures::REGISTRY
+    .lock()
+    .unwrap()
+    .iter()
+    .enumerate()
+    .map(|(_, (key, value))| {
+      let app = proc_macro2::TokenStream::from(input.clone());
+      let func = proc_macro2::TokenStream::from_str(&value)
+        .expect("The provided token stream is not a valid rust construct");
+
+      let emit = quote::quote! {
+        #app .route(#key , actix_web::web::post().to(#func) )
+      };
+
+      proc_macro::TokenStream::from(emit)
+    })
+    .collect();
 
   // use the following to debug outputs
   // eprintln!("{output}");

@@ -1,4 +1,4 @@
 pub mod shared;
 
-mod _home;
+pub mod _home;
 pub use _home::ViewHome;

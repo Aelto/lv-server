@@ -1,5 +1,4 @@
 pub mod responses;
-pub mod procedures;
 
 mod with_router;
 pub use with_router::WithRouter;
@@ -38,6 +37,6 @@ pub mod components;
 
 pub mod deps {
   pub use actix_web;
-  pub use maud;
   pub use blake3;
+  pub use maud;
 }
