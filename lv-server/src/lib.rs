@@ -38,7 +38,6 @@ pub mod components;
 
 pub mod deps {
   pub use actix_web;
-  pub use blake3;
   pub use inventory;
   pub use maud;
 }

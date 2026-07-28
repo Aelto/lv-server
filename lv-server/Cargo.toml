@@ -19,7 +19,6 @@ async-trait = "0.1.86"
 
  # used for hashing strings and generate unique IDs, lv-server re-exports it
  # so it can be used in macros
-blake3 = "1.8.5"
 inventory = "0.3"
 
 lv-server-endpoints-proc-macro = { path = "../endpoints-proc-macro" }
