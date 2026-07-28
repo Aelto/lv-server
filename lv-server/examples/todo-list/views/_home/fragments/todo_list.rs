@@ -89,32 +89,28 @@ impl TodoList {
   }
 
   fn render_todo_item(todo: &Todo) -> Markup {
-    let url = lv_server::procedure!({
-      use crate::prelude::*;
-      use actix_web::web::Form;
-      #[derive(serde::Deserialize)]
-      struct F {
-        id: String
-      }
-
-      async |Form(form): Form<F>, data: crate::app_data::ApiData| {
-        data.remove_todo_by_id(&form.id);
-        crate::views::_home::fragments::TodoList::render(&data.todos()).into_response()
-      }
-    });
+    #[derive(serde::Deserialize)]
+    struct F {
+      id: String
+    }
 
     html!(
       li.fdn.row.items-center
       {
         (todo.text)
 
-          form
-            hx-post={(url)}
-          {
-            input type="hidden" name="id" value={(todo.id)};
-            button
-              {"X"}
-          }
+        form
+          hx-post={(lv_server::procedure!(
+            async |Form(form): Form<F>, data: crate::app_data::ApiData| {
+              data.remove_todo_by_id(&form.id);
+              TodoList::render(&data.todos()).into_response()
+            }
+          ))}
+        {
+          input type="hidden" name="id" value={(todo.id)};
+          button
+            {"X"}
+        }
 
         button
           hx-get={(api::get_edit_form::url(&todo.id))}

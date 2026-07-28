@@ -7,6 +7,8 @@ pub mod views;
 mod app_data;
 mod page;
 
+lv_server::collect_procedures!();
+
 #[tokio::main]
 async fn main() {
   use actix_web::App;
@@ -22,6 +24,9 @@ async fn main() {
     App::new()
       .app_data(actix_web::web::Data::clone(&app_data))
       .configure(routes)
+      .configure(|cfg| {
+        lv_server_endpoints_proc_macro::register_procedures!(cfg);
+      })
   })
   .bind(format!("127.0.0.1:{}", port))
   .expect("HTTP server failure: local port unavailable")
@@ -39,7 +44,5 @@ fn routes(cfg: &mut actix_web::web::ServiceConfig) {
   // this sets up the View itself, but also any fragment it may have:
   views::ViewHome::router(cfg);
   components::paginated_todos::PaginatedFakeItem::router(cfg);
-  lv_server_endpoints_proc_macro::register_procedures!(cfg);
-
   cfg.service(actix_files::Files::new("/static", "./examples/static"));
 }

@@ -29,6 +29,7 @@ pub use path_extractor::PathExtractor;
 
 pub use async_trait::async_trait;
 
+pub use lv_server_endpoints_proc_macro::collect_procedures;
 pub use lv_server_endpoints_proc_macro::endpoints;
 pub use lv_server_endpoints_proc_macro::events;
 pub use lv_server_endpoints_proc_macro::procedure;
@@ -38,5 +39,6 @@ pub mod components;
 pub mod deps {
   pub use actix_web;
   pub use blake3;
+  pub use inventory;
   pub use maud;
 }
