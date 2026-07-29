@@ -188,6 +188,99 @@ the static functions like: `api::delete_todo::url(index: &str)`. Saving you from
 the 404 errors from typos, or allows you to change the route without worrying about
 breaking a form in some long forgotten fragment.
 
+### Procedures
+`lv-server` calls _procedures_ isolated endpoints that HTMX can query, such endpoints
+can be defined through fragments or views and the `endpoints!` macro. But they
+can also be declared via the `procedure!` macro which accepts a closure that implements
+the actix `Handler` trait (all actix endpoints are Handlers).
+
+The `procedure!` macro uses the [inventory](https://crates.io/crates/inventory) crate
+under the hood to register endpoint from anywhere in your code, and to collect them
+in a single location while defining the routes in the Actix app. For this reason
+if you use the `procedure!` macro, you must also use the `register_procedures!` and 
+`collect_procedures!` macros at some point.
+
+#### The `procedure!` macro
+The macro takes as input a closure that is valid Actix endpoint handler, it emits
+an expression that returns a `&'static str` that is an absolute url to that newly
+defined endpoint.
+```rs
+#[derive(serde::Deserialize)]
+struct Body {
+  id: String
+}
+
+let url: &'static str = lv_server::procedure!(
+  async |Form(form): Form<Body>, data: crate::app_data::ApiData| {
+    data.remove_todo_by_id(&form.id);
+    TodoList::render(&data.todos()).into_response()
+  }
+);
+
+maud::html!(
+  form
+    hx-post={(url)} // 👈 we use the url, but note that we could have declared
+    // the procedure here directly without using an intermediary variable.
+  {
+    input type="hidden" name="id" value={(todo.id)};
+    button {"X"}
+  }
+)
+```
+
+Procedures always listen for POST methods with no variable path segments. If data
+must be passed, it shall be done via the native actix `Form` extractor as shown above.
+
+---
+
+Procedures are registered at compile time, meaning calling `procedure!` has literally
+no cost and can be added anywhere in your code, be it a hot loop, or a static variable.
+
+```rs
+for item in items {
+  // this is fine
+  let url: &'static str = lv_server::procedure!(
+    async |data: crate::app_data::ApiData| {
+      TodoList::render(&data.todos()).into_response()
+    }
+  );
+}
+```
+
+Since it "returns" a `&'static str`, it can also be used in static variables:
+```rs
+static ENDPOINT: &'static str = {
+  #[derive(serde::Deserialize)]
+  struct F {
+    id: String
+  }
+
+  lv_server::procedure!(
+    async |Form(form): Form<F>, data: crate::app_data::ApiData| {
+      data.remove_todo_by_id(&form.id);
+      TodoList::render(&data.todos()).into_response()
+    }
+  )
+};
+```
+
+This makes the procedure macro a very good solution for isolated or anonymous endpoints.
+They can be used pretty much anywhere, even in the middle of maud templates:
+
+```rs
+form
+  hx-post={(lv_server::procedure!(
+    async |Form(form): Form<F>, data: crate::app_data::ApiData| {
+      data.remove_todo_by_id(&form.id);
+      TodoList::render(&data.todos()).into_response()
+    }
+  ))}
+{
+  input type="hidden" name="id" value={(todo.id)};
+  button {"X"}
+}
+```
+
 ### Utilities
 `lv-server` makes it mandatory to include a `X-LVSERVER-REQ` header to any non GET request. Without it any request to a view or fragment that isn't a GET will
 become a 404. The easiest solution to tell HTMX to include the header to its request is to use the [`hx-headers`](https://htmx.org/attributes/hx-headers/) attribute to a parent node, for example adding the attribute to the page's body inside our maud templates:
